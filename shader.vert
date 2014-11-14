@@ -7,17 +7,26 @@ layout (location=3) in ivec4 bone_ids;
 layout (location=4) in vec4 bone_weights;
 
 uniform mat4 M; // model matrix
+uniform mat4 P;
+uniform mat4 V;
 uniform mat4 BONES[128];
 
-out vec2 texture_coord;
+out vec3 normal_eye;
+out vec3 position_eye;
+out vec2 tex_coords;
 
 void main () {
 	// send normals to fragment shader
-	mat4 B;
-	B  = BONES[bone_ids[0]]*bone_weights[0];
-	B += BONES[bone_ids[1]]*bone_weights[1];
-	B += BONES[bone_ids[2]]*bone_weights[2];
-	B += BONES[bone_ids[3]]*bone_weights[3];
-	texture_coord = vertex_tex_coords;
-	gl_Position = M * B * vec4 (vertex_point, 1.0);
+	mat4 BoneTransform = mat4(1.0);
+	if(bone_weights[0]+bone_weights[1]+bone_weights[2]+bone_weights[3]>0.9) {
+		BoneTransform  = BONES[bone_ids[0]]*bone_weights[0];
+		BoneTransform += BONES[bone_ids[1]]*bone_weights[1];
+		BoneTransform += BONES[bone_ids[2]]*bone_weights[2];
+		BoneTransform += BONES[bone_ids[3]]*bone_weights[3];
+	}
+
+	normal_eye   = vec3(V*M*vec4(vertex_normal,0.0));
+	position_eye = vec3(V*M*vec4(vertex_point, 1.0));
+	tex_coords = vertex_tex_coords;
+	gl_Position = P * vec4(position_eye, 1.0);
 }

@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_interpolation.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <assimp/Importer.hpp>      // C++ importer interface
@@ -37,13 +38,12 @@ public:
 		for(int i = 0; i < numBones; i++) {
 			_boneNameToIndex[string(bones[i]->mName.C_Str())] = i;
 		}
-		std::cout << "Called constructor, with "<< _numBones << "." << std::endl;
 	}
 
 	const float * getBonesAtTime(double time) {
 		free(_transforms);
 		_transforms = (glm::mat4*)malloc(sizeof(glm::mat4)*_numBones);
-		_fillChildrenTransforms(_rootNode,fmod(time,_animation->mDuration));
+		_fillChildrenTransforms(_rootNode,fmod(time,_animation->mDuration),glm::mat4(1.0));
 		return glm::value_ptr(_transforms[0]);
 	}
 
@@ -58,59 +58,74 @@ public:
         return result;
     }
 
-
 	glm::quat _quatCast(const aiQuaternion &value)
     {
         return glm::quat(value.w, value.x, value.y, value.z);
     }
 
-	void _fillChildrenTransforms(aiNode* parent, double time) {
-
-		glm::mat4 parent_transform;
-		if(_boneNameToIndex.find(string(parent->mName.C_Str())) != _boneNameToIndex.end()) {
-			parent_transform = _transforms[_boneNameToIndex[string(parent->mName.C_Str())]];
-		} else {
-			parent_transform = glm::mat4(1.0);
-		}
+	void _fillChildrenTransforms(aiNode* parent, double time, glm::mat4 parent_transform) {
 
 		for(int i = 0; i < parent->mNumChildren; i++) {
 
 			aiNode* node = parent->mChildren[i];
 
-
 			aiNodeAnim* anim = _getNodeAnim(node->mName);
 			glm::mat4 transform = glm::mat4(1.0);
 
 			if(anim!=NULL) {
-				for(int j = 0; j < anim->mNumScalingKeys; j++) {
+				for(int j = anim->mNumScalingKeys-1; j >= 0; j--) {
 					if(anim->mScalingKeys[j].mTime<time) {
-						aiVector3D scale = anim->mScalingKeys[j].mValue;
-						transform = glm::scale(transform,glm::vec3(scale[0],scale[1],scale[2]));
+						aiVector3D scale;
+						scale = anim->mScalingKeys[j].mValue;
+						glm::mat4 scale_a = glm::scale(glm::mat4(1.0),glm::vec3(scale.x,scale.y,scale.z));
+						scale = anim->mScalingKeys[j+1].mValue;
+						glm::mat4 scale_b = glm::scale(glm::mat4(1.0),glm::vec3(scale.x,scale.y,scale.z));
+						float interpolation_factor = (time-anim->mScalingKeys[j].mTime)/
+											(anim->mScalingKeys[j+1].mTime-anim->mScalingKeys[j].mTime);
+						transform = glm::interpolate(scale_a,scale_b,interpolation_factor) * transform;
 						break;
 					}
 				}
 
-				for(int j = 0; j < anim->mNumRotationKeys; j++) {
-					if(anim->mRotationKeys[j].mTime<time) {
-						aiQuaternion rotation = anim->mRotationKeys[j].mValue;
-						transform = glm::mat4_cast(_quatCast(rotation))*transform;
+				for(int j = anim->mNumRotationKeys-1; j >= 0; j--) {
+					if(anim->mRotationKeys[j].mTime<=time) {
+						glm::quat rotation_a = _quatCast(anim->mRotationKeys[j].mValue);
+						glm::quat rotation_b = _quatCast(anim->mRotationKeys[j+1].mValue);
+						float interpolation_factor = (time-anim->mRotationKeys[j].mTime)/
+											(anim->mRotationKeys[j+1].mTime-anim->mRotationKeys[j].mTime);
+						transform = glm::mat4_cast(glm::slerp(rotation_a,rotation_b,interpolation_factor)) * transform;
 						break;
 					}
 				}
 
-				for(int j = 0; j < anim->mNumPositionKeys; j++) {
+				for(int j = anim->mNumPositionKeys-1; j >= 0; j--) {
 					if(anim->mPositionKeys[j].mTime<time) {
-						aiVector3D position = anim->mPositionKeys[j].mValue;
-						transform = glm::translate(transform,glm::vec3(position[0],position[1],position[2]));
+						aiVector3D position;
+						position = anim->mPositionKeys[j].mValue;
+						glm::mat4 position_a = glm::translate(glm::mat4(1.0),glm::vec3(position.x,position.y,position.z));
+						position = anim->mPositionKeys[j+1].mValue;
+						glm::mat4 position_b = glm::translate(glm::mat4(1.0),glm::vec3(position.x,position.y,position.z));
+						float interpolation_factor = (time-anim->mPositionKeys[j].mTime)/
+											(anim->mPositionKeys[j+1].mTime-anim->mRotationKeys[j].mTime);
+						transform = glm::interpolate(position_a,position_b,interpolation_factor) * transform;
 						break;
 					}
 				}
+
 			}
 
-			int boneIndex = _boneNameToIndex[string(node->mName.C_Str())];
-			transform = _globalInverseTransform*parent_transform*transform*_mat4Cast(_bones[boneIndex]->mOffsetMatrix);
-			_transforms[boneIndex] = transform;
-			_fillChildrenTransforms(node,time);
+			glm::mat4 offset = glm::mat4(1.0);
+
+			if(_boneNameToIndex.find(string(node->mName.C_Str())) != _boneNameToIndex.end()) {
+				int boneIndex = _boneNameToIndex[string(node->mName.C_Str())];
+				glm::mat4 offset = _mat4Cast(_bones[boneIndex]->mOffsetMatrix);
+
+				transform = parent_transform*glm::inverse(offset)*transform*offset;
+
+				_transforms[boneIndex] = transform;
+			}
+
+			_fillChildrenTransforms(node,time,transform);
 		}
 	}
 

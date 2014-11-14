@@ -25,8 +25,13 @@ Anton Gerdelan 7 Oct 2014
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <vector>
 
 #define FPS 25.0
+
+#define STRAFE_LEFT -1
+#define STRAFE_RIGHT 1
+#define NO_STRAFE 0
 
 #include <IL/il.h>
 
@@ -38,6 +43,19 @@ using namespace std;
 int gl_width = 800;
 int gl_height = 800;
 
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+static void cursorPosCallback(GLFWwindow * window, double x, double y);
+
+
+glm::vec3 camera_xyz = glm::vec3(0,-5,5);
+float camera_pitch = M_PI/4;
+float camera_yaw = 0;
+
+double cursor_x = gl_width/2;
+double cursor_y = gl_height/2;
+
+double stride_factor = 0;
+double strafe_factor = NO_STRAFE;
 //
 // copy a shader from a plain text file into a character array
 bool parse_file_into_str (const char* file_name, char* shader_str, int max_len) {
@@ -72,64 +90,67 @@ bool parse_file_into_str (const char* file_name, char* shader_str, int max_len) 
 
 
 
-void load_mesh(GLuint &vao, const aiMesh* mesh) {
+void load_meshes(GLuint &vao, vector<const aiMesh*> meshes) {
 
-	aiMesh aMesh;
-	aiMaterial aMat;
 	GLuint buffer;
-
-	// create array with faces
-	// have to convert from Assimp format to array
-	unsigned int *faceArray;
-	faceArray = (unsigned int *)malloc(sizeof(unsigned int) * mesh->mNumFaces * 3);
-	unsigned int faceIndex = 0;
-
-	for (unsigned int t = 0; t < mesh->mNumFaces; ++t) {
-		const aiFace* face = &mesh->mFaces[t];
-
-		memcpy(&faceArray[faceIndex], face->mIndices,3 * sizeof(unsigned int));
-		faceIndex += 3;
-	}
 
 	// generate Vertex Array for mesh
 	glGenVertexArrays(1,&vao);
 	glBindVertexArray(vao);
 
-	// buffer for faces
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh->mNumFaces * 3, faceArray, GL_STATIC_DRAW);
+	int combined_size = 0;
+	for (int i = 0; i < meshes.size(); i++) {
+		combined_size += meshes[i]->mNumVertices;
+	}
 
-	// buffer for vertex positions
-	if (mesh->HasPositions()) {
+
+	{
+		float* vertices = (float*)malloc(sizeof(float)*combined_size*3);
+		int offset = 0;
+		for(int i = 0; i < meshes.size(); i++) {
+			int count = meshes[i]->mNumVertices*3;
+			memcpy(&vertices[offset],meshes[i]->mVertices,count*sizeof(float));
+			offset += count;
+		}
+
 		glGenBuffers(1, &buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*mesh->mNumVertices, mesh->mVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*combined_size, vertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, 0, 0, 0);
 	}
 
-	// buffer for vertex normals
-	if (mesh->HasNormals()) {
+	{
+
+		float* normals = (float*)malloc(sizeof(float)*combined_size*3);
+		int offset = 0;
+		for(int i = 0; i < meshes.size(); i++) {
+			int count = meshes[i]->mNumVertices*3;
+			memcpy(&normals[offset],meshes[i]->mNormals,count*sizeof(float));
+			offset += count;
+		}
+
 		glGenBuffers(1, &buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*mesh->mNumVertices, mesh->mNormals, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*combined_size, normals, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, 0, 0, 0);
 	}
 
-	// buffer for vertex texture coordinates
-	if (mesh->HasTextureCoords(0)) {
-		float *texCoords = (float *)malloc(sizeof(float)*2*mesh->mNumVertices);
-		for (int k = 0; k < mesh->mNumVertices; k++) {
-
-			texCoords[k*2]   = mesh->mTextureCoords[0][k].x;
-			texCoords[k*2+1] = mesh->mTextureCoords[0][k].y;
-
+	{
+		float *texCoords = (float*)malloc(sizeof(float)*combined_size*2);
+		int offset = 0;
+		for (int k = 0; k < meshes.size(); k++) {
+			for(int i = 0; i < meshes[k]->mNumVertices; i++) {
+				texCoords[offset+i*2]   = meshes[k]->mTextureCoords[0][i].x;
+				texCoords[offset+i*2+1] = meshes[k]->mTextureCoords[0][i].y;
+			}
+			offset += meshes[k]->mNumVertices*2;
 		}
+
 		glGenBuffers(1, &buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*2*mesh->mNumVertices, texCoords, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*2*combined_size, texCoords, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, 0, 0);
 	}
@@ -141,34 +162,34 @@ void load_mesh(GLuint &vao, const aiMesh* mesh) {
 		float weights[4];
 	} BoneInfluence;
 
-	BoneInfluence* bone_influence = (BoneInfluence*)calloc(mesh->mNumVertices,sizeof(BoneInfluence));
-
-	for(int i = 0; i < mesh->mNumBones; i++) {
-		aiBone* bone = mesh->mBones[i];
-		for(int j = 0; j < bone->mNumWeights; j++) {
-			aiVertexWeight vw = bone->mWeights[j];
-			int k = 0;
-			while( bone_influence[vw.mVertexId].weights[k] != 0 && k < 4 ){
-				k++;
-			}
-			if(k!=4) {
-				bone_influence[vw.mVertexId].weights[k] = vw.mWeight;
-				bone_influence[vw.mVertexId].bone_ids[k] = i;
-			} else {
-				printf("Bone overflow occured");
+	BoneInfluence* bone_influence = (BoneInfluence*)calloc(combined_size,sizeof(BoneInfluence));
+	for(int h = 0; h < meshes.size(); h++) {
+		for(int i = 0; i < meshes[h]->mNumBones; i++) {
+			aiBone* bone = meshes[h]->mBones[i];
+			for(int j = 0; j < bone->mNumWeights; j++) {
+				aiVertexWeight vw = bone->mWeights[j];
+				int k = 0;
+				while( bone_influence[vw.mVertexId].weights[k] != 0 && k < 4 ){
+					k++;
+				}
+				if(k!=4) {
+					bone_influence[vw.mVertexId].weights[k] = vw.mWeight;
+					bone_influence[vw.mVertexId].bone_ids[k] = i;
+				}
 			}
 		}
 	}
 
+	glGenBuffers(1,&buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(BoneInfluence)*combined_size,bone_influence,GL_STATIC_DRAW);
     glEnableVertexAttribArray(3);
     glVertexAttribIPointer(3, 4, GL_INT, sizeof(BoneInfluence), (const GLvoid*)0);
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(BoneInfluence), (const GLvoid*)16);
 
 	// unbind buffers
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER,0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
 }
 
@@ -270,7 +291,7 @@ GLFWwindow* window_init() {
 	printf ("OpenGL version supported %s\n", version);
 	glEnable (GL_DEPTH_TEST); // enable depth-testing
 	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
-	glClearColor (0.5, 0.5, 0.5, 1.0);
+	glClearColor (0.0, 0.0, 0.0, 1.0);
 
 	GLuint texture_buffer;
 	glEnable(GL_TEXTURE_2D);
@@ -278,9 +299,51 @@ GLFWwindow* window_init() {
 	glBindTexture(GL_TEXTURE_2D, texture_buffer);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, cursorPosCallback);
+
 	return window;
+}
+
+void updatePitchYaw(GLFWwindow* window) {
+	const static float MAX_ROTATION_PER_UPDATE = 0.2;
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	float dyaw = ((cursor_x-width/2)/width);
+	if(dyaw > 0.2) {
+		camera_yaw += (dyaw-0.2)*1.25*MAX_ROTATION_PER_UPDATE;
+	}
+	if(dyaw < -0.2) {
+		camera_yaw += (dyaw+0.2)*1.25*MAX_ROTATION_PER_UPDATE;
+	}
+
+	float dpitch = (((height-cursor_y)-height/2)/height);
+	if(dpitch > 0.2){
+		camera_pitch += (dpitch-0.2)*1.25*MAX_ROTATION_PER_UPDATE;
+	}
+	if(dpitch < -0.2) {
+		camera_pitch += (dpitch+0.2)*1.25*MAX_ROTATION_PER_UPDATE;
+	}
+
+	if(camera_pitch>M_PI) {
+		camera_pitch=M_PI;
+	}
+	if(camera_pitch<0) {
+		camera_pitch = 0;
+	}
+}
+
+void updateStrideStrafe() {
+	const static float SPEED = 0.5;
+	camera_xyz.z -= stride_factor*cos(camera_pitch);
+	camera_xyz.x += stride_factor*sin(camera_pitch)*sin(camera_yaw);
+	camera_xyz.y += stride_factor*sin(camera_pitch)*cos(camera_yaw);
+
+	camera_xyz.x += abs(strafe_factor)*SPEED*sin(camera_yaw+strafe_factor*M_PI/2);
+	camera_xyz.y += abs(strafe_factor)*SPEED*cos(camera_yaw+strafe_factor*M_PI/2);
 }
 
 int main () {
@@ -289,23 +352,35 @@ int main () {
 	GLuint vao;
 
 	GLFWwindow* window = window_init();
-	Assimp::Importer importer;
+	Assimp::Importer importer1;
 
-	const aiScene* scene = importer.ReadFile("resources/newguy.md5mesh", aiProcess_Triangulate);
-	if(!scene){
-		fprintf(stderr, "%s", importer.GetErrorString());
+	const aiScene* character = importer1.ReadFile("resources/character.dae", aiProcess_Triangulate);
+	if(!character){
+		fprintf(stderr, "%s", importer1.GetErrorString());
 		return 0;
 	}
-	const aiMesh* mesh = scene->mMeshes[0];
+	const aiMesh* ch_mesh = character->mMeshes[0];
 
-	load_mesh(vao,mesh);
+	Assimp::Importer importer2;
+	const aiScene* ground = importer2.ReadFile("resources/ground.dae", aiProcess_Triangulate | aiProcess_FlipUVs);
+	if(!ground){
+		fprintf(stderr, "%s", importer2.GetErrorString());
+		return 0;
+	}
+	const aiMesh* gr_mesh = ground->mMeshes[0];
+
+	vector<const aiMesh*> meshes;
+	meshes.push_back(ch_mesh);
+	meshes.push_back(gr_mesh);
+	load_meshes(vao,meshes);
 
 	shader_programme = load_shader_programme("shader.vert","shader.frag");
 
-	int M_loc = glGetUniformLocation (shader_programme, "M");
-
 	unsigned int imageID;
 
+	/**
+		Load textures
+	 */
 	ilInit();
 	ilGenImages(1, &imageID);
 	ilBindImage(imageID);
@@ -313,43 +388,122 @@ int main () {
 	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
 
 	aiString path;
-	scene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
+	if(character->mMaterials[ch_mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &path) != AI_SUCCESS) {
+		cout << "Could not load texture filename" << endl;
+	}
 
-	ilLoadImage((ILstring)path.C_Str());
+	if(!ilLoadImage(("resources/"+string(path.C_Str())).c_str())){
+		cout << "Failed to load image" << endl;
+	}
 	ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData());
 
 	double last_tick = glfwGetTime();
 
-	BoneAnimation bone_animation(mesh->mBones,mesh->mNumBones,scene->mAnimations[0],scene->mRootNode);
+	BoneAnimation bone_animation(ch_mesh->mBones,ch_mesh->mNumBones,character->mAnimations[0],character->mRootNode);
 	int bones_loc = glGetUniformLocation (shader_programme, "BONES");
+
+	int M_loc = glGetUniformLocation (shader_programme, "M");
+	int V_loc = glGetUniformLocation (shader_programme, "V");
+	int P_loc = glGetUniformLocation (shader_programme, "P");
+
+	glm::mat4 V,P,M;
+
+	glUseProgram (shader_programme);
+
+	P = glm::perspective(70.0f,1.0f,0.1f,100.0f);
+	glUniformMatrix4fv (P_loc, 1, GL_FALSE, glm::value_ptr(P));
+
 
 	while (!glfwWindowShouldClose (window)) {
 
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram (shader_programme);
 
-		glm::mat4 V,P,M;
+		V = glm::rotate(glm::mat4(1.0),camera_pitch,glm::vec3(-1,0,0));
+		V = glm::rotate(V,camera_yaw,glm::vec3(0,0,1));
+		V = glm::translate(V,glm::vec3(-camera_xyz.x,-camera_xyz.y,-camera_xyz.z));
+		glUniformMatrix4fv (V_loc, 1, GL_FALSE, glm::value_ptr(V));
+
 		M = glm::scale(glm::mat4(1.0),glm::vec3(0.5,0.5,0.5));
-		M = glm::rotate(M,(float)M_PI/2.0f,glm::vec3(-1,0,0));
+		glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(M));
+		glUniformMatrix4fv (bones_loc, ch_mesh->mNumBones, GL_FALSE, bone_animation.getBonesAtTime(last_tick));
+		glDrawArrays( GL_TRIANGLES, 0, ch_mesh->mNumVertices );
 
-		V = glm::lookAt(glm::vec3(0.0,5.0,10.0),glm::vec3(0,2,0),glm::vec3(0,1,0));
-		P = glm::ortho(-30.0f,30.0f,-30.0f,30.0f,0.1f,100.0f);
 
-		glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(P*V*M));
-		glUniformMatrix4fv (bones_loc, mesh->mNumBones, GL_FALSE, bone_animation.getBonesAtTime(last_tick));
-		glBindVertexArray (vao);
+		M = glm::scale(glm::mat4(1.0),glm::vec3(500,500,0));
+		glUniformMatrix4fv(M_loc, 1, GL_FALSE, glm::value_ptr(M));
+		glDrawArrays( GL_TRIANGLES, ch_mesh->mNumVertices, gr_mesh->mNumVertices);
 
-		glDrawArrays( GL_TRIANGLES, 0, mesh->mNumVertices );
-
-		/* this just updates window events and keyboard input events (not used yet) */
-		glfwPollEvents ();
-		glfwSwapBuffers (window);
+		glfwPollEvents();
+		updatePitchYaw(window);
+		updateStrideStrafe();
+		glfwSwapBuffers(window);
 
 		while(glfwGetTime()<last_tick+1/FPS);
 		last_tick = glfwGetTime();
 	}
 
 	return 0;
+}
+
+static void cursorPosCallback(GLFWwindow * window, double x, double y) {
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	if(x>0&&x<width) {
+		cursor_x = x;
+		if(y>0&&y<height){
+			cursor_y = y;
+		}
+		else {
+			cursor_x = width/2;
+			cursor_y = height/2;
+		}
+	}
+	else {
+		cursor_x = width/2;
+		cursor_y = height/2;
+	}
+
+}
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (action==GLFW_PRESS){
+	    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+	        glfwSetWindowShouldClose(window, GL_TRUE);
+		}
+
+		if (key == GLFW_KEY_UP) {
+			stride_factor = 1;
+		}
+
+		if (key == GLFW_KEY_DOWN) {
+			stride_factor = -1;
+		}
+
+		if(key == GLFW_KEY_LEFT) {
+			strafe_factor = STRAFE_LEFT;
+		}
+
+		if(key == GLFW_KEY_RIGHT) {
+			strafe_factor = STRAFE_RIGHT;
+		}
+	}
+	if (action==GLFW_RELEASE) {
+		if(key==GLFW_KEY_UP && stride_factor == 1) {
+			stride_factor = 0;
+		}
+		if(key==GLFW_KEY_DOWN && stride_factor == -1) {
+			stride_factor = 0;
+		}
+
+		if(key == GLFW_KEY_LEFT && strafe_factor == STRAFE_LEFT) {
+			strafe_factor = NO_STRAFE;
+		}
+
+		if(key == GLFW_KEY_RIGHT && strafe_factor == STRAFE_RIGHT) {
+			strafe_factor = NO_STRAFE;
+		}
+	}
 }
