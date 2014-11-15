@@ -293,15 +293,6 @@ GLFWwindow* window_init() {
 	glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
 	glClearColor (0.0, 0.0, 0.0, 1.0);
 
-	GLuint texture_buffer;
-	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, &texture_buffer);
-	glBindTexture(GL_TEXTURE_2D, texture_buffer);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, cursorPosCallback);
 
@@ -396,6 +387,16 @@ int main () {
 		cout << "Failed to load image" << endl;
 	}
 	ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+
+	GLuint texture_buffer;
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &texture_buffer);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture_buffer);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData());
 	glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -411,6 +412,9 @@ int main () {
 	glm::mat4 V,P,M;
 
 	glUseProgram (shader_programme);
+
+	GLuint texLoc = glGetUniformLocation(shader_programme, "uni_tex");
+	glUniform1i(texLoc, 0);
 
 	P = glm::perspective(70.0f,1.0f,0.1f,100.0f);
 	glUniformMatrix4fv (P_loc, 1, GL_FALSE, glm::value_ptr(P));
