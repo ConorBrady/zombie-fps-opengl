@@ -23,7 +23,7 @@ int main () {
 	Camera* camera = new Camera(vec3(0,-10,10),M_PI/4,0);
 
 	window->addControllable(camera);
-	window->setPerspective(*shader);
+	window->setShader(*shader);
 
 	double last_tick = window->getTime();
 

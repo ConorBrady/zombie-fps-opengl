@@ -85,6 +85,10 @@ void cursorPositionCallback(GLFWwindow * window, double x, double y) {
 	windowControl->dispatchMessage(CONTROL_SIGNAL_ALT_Y,dpitch);
 }
 
+void windowSizeCallback(GLFWwindow* window, int width, int height) {
+	windows[window]->didResize();
+}
+
 Window::Window(double width, double height) {
 
 	if (!glfwInit ()) {
@@ -105,7 +109,7 @@ Window::Window(double width, double height) {
 	glfwSetKeyCallback(_window, keyCallback);
 
 	glfwSetCursorPosCallback(_window, cursorPositionCallback);
-
+	glfwSetWindowSizeCallback(_window, windowSizeCallback);
 	windows[_window] = this;
 
 	glewExperimental = GL_TRUE;
@@ -133,9 +137,17 @@ float Window::getTime() {
 	return glfwGetTime();
 }
 
-void Window::setPerspective(unsigned int shader) {
-	glm::mat4 P = glm::perspective(70.0f,1.0f,0.1f,100.0f);
-	int P_loc = glGetUniformLocation (shader, "P");
+void Window::setShader(unsigned int shader) {
+	_shaderId = shader;
+	didResize();
+}
+
+void Window::didResize() {
+	int width, height;
+	glfwGetWindowSize(_window, &width, &height);
+
+	glm::mat4 P = glm::perspective(70.0f,(float)width/(float)height,0.1f,100.0f);
+	int P_loc = glGetUniformLocation (_shaderId, "P");
 	glUniformMatrix4fv (P_loc, 1, GL_FALSE, glm::value_ptr(P));
 }
 

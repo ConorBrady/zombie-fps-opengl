@@ -11,7 +11,7 @@ class Window : public virtual IController{
 private:
 	vector<IControllable*> _controllables;
 	GLFWwindow* _window;
-
+	unsigned int _shaderId;
 public:
 	Window(double width, double height);
 
@@ -22,7 +22,8 @@ public:
 	bool shouldClose();
 	float getTime();
 
-	void setPerspective(unsigned int shader);
+	void setShader(unsigned int shader);
+	void didResize();
 	void presentBuffer();
 	void pollEvents();
 
