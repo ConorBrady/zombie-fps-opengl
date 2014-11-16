@@ -2,6 +2,10 @@
 
 #include <GL/glew.h>
 
+#define DEAD_ZONE 0.2
+#define ANGULAR_SPEED 5
+#define LINEAR_SPEED 10
+
 #define GLM_FORCE_RADIANS
 
 #include "glm/glm.hpp"
@@ -18,34 +22,47 @@ Camera::Camera(vec3 xyz, float pitch, float yaw) {
 	_pitchSpeed = 0;
 	_yawSpeed = 0;
 
-	_strideSpeed = CAM_STRIDE_NONE;
-	_strafeSpeed = CAM_STRAFE_NONE;
+	_strideSpeed = 0;
+	_strafeSpeed = 0;
 
 	_lastUpdateTime = -1;
 }
 
-void Camera::setPitchSpeed(float radPerSec) {
-	_pitchSpeed = radPerSec;
-}
+void Camera::signal(ControlSignal cs, float value) {
 
-void Camera::setYawSpeed(float radPerSec) {
-	_yawSpeed = radPerSec;
-}
+	value = fmin(1.0f,value);
+	value = fmax(-1.0f,value);
 
-void Camera::setStrideSpeed(float stride) {
-	_strideSpeed = stride;
-}
-
-float Camera::getStrideSpeed() {
-	return _strideSpeed;
-}
-
-void Camera::setStrafeSpeed(float strafe) {
-	_strafeSpeed = strafe;
-}
-
-float Camera::getStrafeSpeed() {
-	return _strafeSpeed;
+	switch(cs) {
+		case CONTROL_SIGNAL_PRIMARY_X:
+			_strafeSpeed = value*LINEAR_SPEED;
+			break;
+		case CONTROL_SIGNAL_PRIMARY_Y:
+			_strideSpeed = value*LINEAR_SPEED;
+			break;
+		case CONTROL_SIGNAL_ALT_X:
+			if(value > DEAD_ZONE) {
+				value = (value-DEAD_ZONE);
+			}else if(value < -DEAD_ZONE) {
+				value = (value+DEAD_ZONE);
+			} else {
+				value = 0.0f;
+			}
+			_yawSpeed = value*ANGULAR_SPEED;
+			break;
+		case CONTROL_SIGNAL_ALT_Y:
+			if(value > DEAD_ZONE) {
+				value = (value-DEAD_ZONE);
+			} else if(value < -DEAD_ZONE) {
+				value = (value+DEAD_ZONE);
+			} else {
+				value = 0.0f;
+			}
+			_pitchSpeed = value*ANGULAR_SPEED;
+			break;
+		default:
+			break;
+	}
 }
 
 void Camera::update(uint shader, float time) {
@@ -58,8 +75,9 @@ void Camera::update(uint shader, float time) {
 		_xyz.x += secondsPassed*_strideSpeed*sin(_pitch)*sin(_yaw);
 		_xyz.y += secondsPassed*_strideSpeed*sin(_pitch)*cos(_yaw);
 
-		_xyz.x += secondsPassed*abs(_strafeSpeed)*sin(_yaw+_strafeSpeed*M_PI/2);
-		_xyz.y += secondsPassed*abs(_strafeSpeed)*cos(_yaw+_strafeSpeed*M_PI/2);
+		int strafeSpeedSign = (_strafeSpeed > 0) - (_strafeSpeed < 0);
+		_xyz.x += secondsPassed*fabs(_strafeSpeed)*sin(_yaw+strafeSpeedSign*M_PI/2);
+		_xyz.y += secondsPassed*fabs(_strafeSpeed)*cos(_yaw+strafeSpeedSign*M_PI/2);
 
 		_pitch += secondsPassed * _pitchSpeed;
 		_yaw += secondsPassed * _yawSpeed;

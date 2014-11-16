@@ -6,17 +6,9 @@ in vec2 tex_coords;
 
 uniform sampler2D uni_tex;
 uniform mat4 V;
-//out vec4 frag_colour;
-
-//void main () {
-//	frag_colour = texture(uni_tex,tex_coords);
-//}
-
-
-
 
 // fixed point light properties
-vec3 light_position_world = vec3 (0.0, 0.0, 5.0);
+vec3 light_position_world = vec3 (0.0, -20.0, 20.0);
 vec3 Ls = vec3 (1.0, 0.8, 0.8);
 vec3 Ld = vec3 (1.0, 0.6, 0.6);
 vec3 La = vec3 (0.2, 0.1, 0.1);

@@ -39,7 +39,7 @@ bool parse_file_into_str (const char* file_name, char* shader_str, int max_len) 
 }
 
 
-unsigned int ShaderLoader::getProgramId(const char* vertex_shader, const char* fragment_shader) {
+Shader::Shader(const char* vertex_shader, const char* fragment_shader) {
 
 	char* vertex_shader_str;
 	char* fragment_shader_str;
@@ -77,7 +77,6 @@ unsigned int ShaderLoader::getProgramId(const char* vertex_shader, const char* f
 		printf("vs: %s\n", errorLog);
 		//Exit with failure.
 		glDeleteShader(shader); //Don't leak the shader.
-		return -1;
 	}
 
 	glCompileShader (fs);
@@ -97,12 +96,14 @@ unsigned int ShaderLoader::getProgramId(const char* vertex_shader, const char* f
 		printf("fs: %s\n", errorLog);
 		//Exit with failure.
 		glDeleteShader(shader); //Don't leak the shader.
-		return -1;
 	}
 
 	GLuint shader_programme = glCreateProgram ();
 	glAttachShader (shader_programme, fs);
 	glAttachShader (shader_programme, vs);
 	glLinkProgram (shader_programme);
-	return shader_programme;
+
+	glUseProgram (shader_programme);
+
+	_shaderId = shader_programme;
 }

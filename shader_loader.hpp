@@ -1,4 +1,9 @@
-class ShaderLoader {
+class Shader {
+private:
+	unsigned int _shaderId;
+
 public:
-	static unsigned int getProgramId(const char* vertex_shader, const char* fragment_shader);
+	Shader(const char* vertex_shader, const char* fragment_shader);
+
+	operator int() { return _shaderId; }
 };

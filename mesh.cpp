@@ -162,7 +162,7 @@ Mesh::Mesh(const char* filename) {
 
 	ilShutDown();
 
-	_boneAnimation = new BoneAnimation(meshes[0]->mBones,meshes[0]->mNumBones,scene->mAnimations[0],scene->mRootNode);
+	//_boneAnimation = new BoneAnimation(meshes[0]->mBones,meshes[0]->mNumBones,scene->mAnimations[0],scene->mRootNode);
 }
 
 

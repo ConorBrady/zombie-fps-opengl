@@ -1,5 +1,3 @@
-#include "mesh.hpp"
-
 class Zombie {
 
 private:
@@ -7,5 +5,5 @@ private:
 
 public:
 	Zombie(double x, double y);
-	void draw(GLuint shader, double time);
+	void draw(unsigned int shader, float time);
 };
