@@ -144,7 +144,7 @@ Mesh::Mesh(const char* filename) {
 	}
 
 	if(!ilLoadImage(("resources/"+string(path.C_Str())).c_str())){
-		cout << "Failed to load image" << endl;
+		cout << "Failed to load image:" << path.C_Str() << endl;
 	}
 	ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 
@@ -162,13 +162,13 @@ Mesh::Mesh(const char* filename) {
 
 	ilShutDown();
 
-	//_boneAnimation = new BoneAnimation(meshes[0]->mBones,meshes[0]->mNumBones,scene->mAnimations[0],scene->mRootNode);
+	_boneAnimation = new BoneAnimation(scene);
 }
 
 
 void Mesh::draw(GLuint shader, double time) {
-	// GLuint bones_loc = glGetUniformLocation (shader, "BONES");
-	//glUniformMatrix4fv (bones_loc, _boneAnimation->numBones(), GL_FALSE, _boneAnimation->getBonesAtTime(time));
+	GLuint bones_loc = glGetUniformLocation (shader, "BONES");
+	glUniformMatrix4fv (bones_loc, _boneAnimation->numBones(), GL_FALSE, _boneAnimation->getBonesAtTime(time));
 
 	GLuint textureLoc = glGetUniformLocation(shader, "uni_tex");
 	glUniform1i(textureLoc, _textureIndex);

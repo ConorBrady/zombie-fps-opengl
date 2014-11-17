@@ -146,7 +146,7 @@ void Window::didResize() {
 	int width, height;
 	glfwGetWindowSize(_window, &width, &height);
 
-	glm::mat4 P = glm::perspective(70.0f,(float)width/(float)height,0.1f,100.0f);
+	glm::mat4 P = glm::perspective(70.0f,(float)width/(float)height,0.1f,1000.0f);
 	int P_loc = glGetUniformLocation (_shaderId, "P");
 	glUniformMatrix4fv (P_loc, 1, GL_FALSE, glm::value_ptr(P));
 }
