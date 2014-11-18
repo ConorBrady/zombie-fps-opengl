@@ -46,18 +46,18 @@ mat4 Animation::getTransformAtTime(float time) {
 		}
 	}
 
-	// for(int j = _positionKeys.size()-1; j >= 0; j--) {
-	// 	if(_positionKeys[j].mTime<time) {
-	// 		aiVector3D position;
-	// 		position = _positionKeys[j].mValue;
-	// 		glm::mat4 position_a = translate(mat4(1.0),vec3(position.x,position.y,position.z));
-	// 		position = _positionKeys[j+1].mValue;
-	// 		glm::mat4 position_b = translate(mat4(1.0),vec3(position.x,position.y,position.z));
-	// 		float interpolation_factor = (time-_positionKeys[j].mTime)/
-	// 							(_positionKeys[j+1].mTime-_rotationKeys[j].mTime);
-	// 		transform = interpolate(position_a,position_b,interpolation_factor) * transform;
-	// 		break;
-	// 	}
-	// }
+	for(int j = _positionKeys.size()-1; j >= 0; j--) {
+		if(_positionKeys[j].mTime<time) {
+			aiVector3D position;
+			position = _positionKeys[j].mValue;
+			glm::mat4 position_a = translate(mat4(1.0),vec3(position.x,position.y,position.z));
+			position = _positionKeys[j+1].mValue;
+			glm::mat4 position_b = translate(mat4(1.0),vec3(position.x,position.y,position.z));
+			float interpolation_factor = (time-_positionKeys[j].mTime)/
+								(_positionKeys[j+1].mTime-_rotationKeys[j].mTime);
+			transform = interpolate(position_a,position_b,interpolation_factor) * transform;
+			break;
+		}
+	}
 	return transform;
 }

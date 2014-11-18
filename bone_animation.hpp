@@ -13,11 +13,9 @@ class BoneAnimation {
 
 private:
 	vector<Bone*> _bones;
-	vector<Bone*> _rootNodes;
-	map<string,int> _boneNameToIndex;
+	vector<int> _rootNodes;
 	mat4* _transforms;
 
-	Bone* _getBoneForName(string name);
 	void _fillTransforms(Bone* parent, double time, mat4 parent_transform);
 	void _addChildren(aiNode* current);
 

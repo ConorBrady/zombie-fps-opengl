@@ -8,13 +8,13 @@ uniform sampler2D uni_tex;
 uniform mat4 V;
 
 // fixed point light properties
-vec3 light_position_world = vec3 (0.0, -20.0, 20.0);
+vec3 light_position_world = vec3 (0.0, 0.0, 15.0);
 vec3 Ls = vec3 (1.0, 0.8, 0.8);
 vec3 Ld = vec3 (1.0, 0.6, 0.6);
-vec3 La = vec3 (0.2, 0.1, 0.1);
+vec3 La = vec3 (0.2, 0.0, 0.0);
 
 // surface reflectance
-vec3 Ks = vec3 (1.0, 1.0, 1.0);
+vec3 Ks = vec3 (0.5, 0.5, 0.5);
 vec3 Kd = vec3 (1.0, 1.0, 1.0);
 vec3 Ka = vec3 (1.0, 1.0, 1.0);
 
@@ -24,8 +24,13 @@ out vec4 fragment_colour; // final colour of surface
 
 void main () {
 
+
 	vec3 light_position_eye = vec3 (V * vec4 (light_position_world, 1.0));
 	vec3 position_to_light_dir_eye = normalize (light_position_eye - position_eye);
+
+	float light_reach = 15.0f;
+	float distance_from_light_to_position = length(light_position_eye-position_eye);
+	float light_intensity = max(1.0/pow(distance_from_light_to_position/light_reach,2.0),0.0);
 
 	float dot_prod = dot (position_to_light_dir_eye, normalize(normal_eye));
 	dot_prod = max (dot_prod, 0.0);
@@ -41,5 +46,5 @@ void main () {
 	float specular_factor = pow (dot_prod_specular, specular_exponent);
 	vec3 Is = Ls * Ks * specular_factor; // final specular intensity
 
-	fragment_colour = texture(uni_tex,tex_coords)*vec4 (Is + Id + Ia, 1.0);
+	fragment_colour = texture(uni_tex,tex_coords)*vec4 (Is + Id + Ia, 1.0)*light_intensity;
 }
