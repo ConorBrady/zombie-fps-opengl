@@ -13,12 +13,24 @@ class Animation;
 using namespace glm;
 using namespace std;
 
+// Represents a single bone complete with children.
+
 class Bone {
 private:
-	mat4 _offsetMatrix;
+
+	// The offset matrix to translate a vertex to bone space.
+	mat4 _offsetMatrix
+
+	// The name of the bone used for identification.
 	string _name;
+
+	// The bones children
 	vector<Bone*> _children;
+
+	// A map of the bones associated animations
 	map<string,Animation*> _animations;
+
+	// The bones index in the shader index array.
 	int _index;
 
 public:
