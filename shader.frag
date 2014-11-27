@@ -8,7 +8,7 @@ uniform sampler2D uni_tex;
 uniform mat4 V;
 
 // fixed point light properties
-vec3 light_position_world = vec3 (0.0, 0.0, 15.0);
+vec3 light_position_world = vec3 (0.0, -15.0, 15.0);
 vec3 Ls = vec3 (1.0, 0.8, 0.8);
 vec3 Ld = vec3 (1.0, 0.6, 0.6);
 vec3 La = vec3 (0.2, 0.0, 0.0);
@@ -46,5 +46,5 @@ void main () {
 	float specular_factor = pow (dot_prod_specular, specular_exponent);
 	vec3 Is = Ls * Ks * specular_factor; // final specular intensity
 
-	fragment_colour = texture(uni_tex,tex_coords)*vec4 (Is + Id + Ia, 1.0)*light_intensity;
+	fragment_colour = vec4 (Is + Id + Ia, 1.0)*light_intensity;
 }

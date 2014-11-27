@@ -2,7 +2,8 @@
 
 #include "controller_interface.hpp"
 
-class GLFWwindow;
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 using namespace std;
 

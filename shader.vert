@@ -25,10 +25,10 @@ void main () {
 		BoneTransform += BONES[bone_ids[3]]*bone_weights[3];
 	}
 
-	// normal_eye   = vec3(V*M*BoneTransform*vec4(vertex_normal,0.0));
-	normal_eye   = vec3(V*M*vec4(vertex_normal,0.0));
-	// position_eye = vec3(V*M*BoneTransform*vec4(vertex_point, 1.0));
-	position_eye = vec3(V*M*vec4(vertex_point, 1.0));
+	normal_eye   = vec3(V*M*BoneTransform*vec4(vertex_normal,0.0));
+	// normal_eye   = vec3(V*M*vec4(vertex_normal,0.0));
+	position_eye = vec3(V*M*BoneTransform*vec4(vertex_point, 1.0));
+	// position_eye = vec3(V*M*vec4(vertex_point, 1.0));
 	tex_coords = vertex_tex_coords;
 	gl_Position = P * vec4(position_eye, 1.0);
 }

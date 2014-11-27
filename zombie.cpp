@@ -15,7 +15,7 @@ static Mesh* _mesh = NULL;
 Zombie::Zombie(double x, double y) {
 
 	if(_mesh==NULL) {
-		_mesh = new Mesh("resources/zombie.dae");
+		_mesh = new Mesh("resources/cube.dae");
 	}
 	_x = x;
 	_y = y;

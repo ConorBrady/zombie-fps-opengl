@@ -2,21 +2,18 @@
 #include <vector>
 
 #include <assimp/scene.h>
-#include <glm/glm.hpp>
 
 #include "bone.hpp"
 
-using namespace std;
-using namespace glm;
 
 class BoneAnimation {
 
 private:
-	vector<Bone*> _bones;
-	vector<int> _rootNodes;
-	mat4* _transforms;
-
-	void _fillTransforms(Bone* parent, double time, mat4 parent_transform);
+	std::vector<Bone*> _bones;
+	std::vector<int> _rootNodes;
+	glm::mat4* _transforms;
+	glm::mat4 _globalInverseTransform;
+	void _fillTransforms(Bone* parent, double time, glm::mat4 parent_transform);
 	void _addChildren(aiNode* current);
 
 public:

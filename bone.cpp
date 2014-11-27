@@ -4,7 +4,7 @@
 
 #include "animation.hpp"
 
-glm::mat4 _mat4Cast(const aiMatrix4x4 &value)
+glm::mat4 _matCast(const aiMatrix4x4 &value)
 {
 	glm::mat4 result;
 	result[0] = glm::vec4(value[0][0], value[1][0], value[2][0], value[3][0]);
@@ -16,8 +16,8 @@ glm::mat4 _mat4Cast(const aiMatrix4x4 &value)
 }
 
 Bone::Bone(aiBone* bone, int index) {
-	_offsetMatrix = _mat4Cast(bone->mOffsetMatrix);
-	_name = string(string(bone->mName.C_Str()));
+	_offsetMatrix = _matCast(bone->mOffsetMatrix);
+	_name = std::string(std::string(bone->mName.C_Str()));
 	_index = index;
 }
 
@@ -25,11 +25,11 @@ void Bone::addChild(Bone* bone) {
 	_children.push_back(bone);
 }
 
-string Bone::getName() {
+std::string Bone::getName() {
 	return _name;
 }
 
-vector<Bone*> Bone::getChildren() {
+std::vector<Bone*> Bone::getChildren() {
 	return _children;
 }
 
@@ -37,16 +37,16 @@ int Bone::getIndex() {
 	return _index;
 }
 
-void Bone::addAnimation(string name, aiNodeAnim* anim, float duration) {
+void Bone::addAnimation(std::string name, aiNodeAnim* anim, float duration) {
 
 	_animations[name] = new Animation(anim,duration);
 }
 
-mat4 Bone::getTransformForAnimationAtTime(string name, float time) {
-	
-	mat4 transform = glm::mat4(1.0);
+glm::mat4 Bone::getTransformForAnimationAtTime(std::string name, float time) {
+
+	glm::mat4 transform = glm::mat4(1.0);
 	if(!_animations.empty()) {
 		transform = _animations[name]->getTransformAtTime(time);
 	}
-	return inverse(_offsetMatrix)*transform*_offsetMatrix;
+	return transform*_offsetMatrix;
 }
