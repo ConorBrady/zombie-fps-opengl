@@ -15,7 +15,7 @@ int main () {
 
 
 	Landscape* landscape = Landscape::getLandscape();
-	Player* player = new Player(vec3(0,-10,0));
+	Player* player = new Player(vec3(0,-20,0));
 
 	Zombie* zombies[5][5];
 	for(int i = 0; i < 5; i++) {

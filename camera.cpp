@@ -5,6 +5,8 @@
 #define DEAD_ZONE 0.2
 #define ANGULAR_SPEED 5
 #define LINEAR_SPEED 10
+#define BOUNCE_HEIGHT 0.25
+#define BOUNCE_SPEED 7
 
 #define GLM_FORCE_RADIANS
 
@@ -26,6 +28,7 @@ Camera::Camera(vec3 xyz, float pitch, float yaw) {
 	_strafeSpeed = 0;
 
 	_lastUpdateTime = -1;
+	_runStart = 0;
 }
 
 void Camera::signal(ControlSignal cs, float value) {
@@ -39,6 +42,9 @@ void Camera::signal(ControlSignal cs, float value) {
 			break;
 		case CONTROL_SIGNAL_PRIMARY_Y:
 			_strideSpeed = value*LINEAR_SPEED;
+			if(value == 0) {
+				_runStart = 0;
+			}
 			break;
 		case CONTROL_SIGNAL_ALT_X:
 			if(value > DEAD_ZONE) {
@@ -67,11 +73,19 @@ void Camera::signal(ControlSignal cs, float value) {
 
 void Camera::update(uint shader, float time) {
 
+	float bounce = 0;
 	if( _lastUpdateTime > 0 ) {
 
 		float secondsPassed = time - _lastUpdateTime;
 
-		//_xyz.z -= secondsPassed*_strideSpeed*cos(_pitch);
+		if(_runStart==0 && _strideSpeed != 0) {
+			_runStart = time;
+		}
+		if(_strideSpeed != 0 ) {
+			bounce = fabs(sin((time-_runStart)*BOUNCE_SPEED)*BOUNCE_HEIGHT);
+		}
+
+		//_xyz.z -= secondsPassed*_strideSpeed*cos(_pitch); // NO FLYING
 		_xyz.x += secondsPassed*_strideSpeed*sin(_pitch)*sin(_yaw);
 		_xyz.y += secondsPassed*_strideSpeed*sin(_pitch)*cos(_yaw);
 
@@ -94,7 +108,7 @@ void Camera::update(uint shader, float time) {
 
 	V = rotate(mat4(1.0),_pitch,vec3(-1,0,0));
 	V = rotate(V,_yaw,vec3(0,0,1));
-	V = translate(V,vec3(-_xyz.x,-_xyz.y,-_xyz.z-5));
+	V = translate(V,vec3(-_xyz.x,-_xyz.y,-_xyz.z-5-bounce));
 
 	int V_loc = glGetUniformLocation (shader, "V");
 	glUniformMatrix4fv (V_loc, 1, GL_FALSE, glm::value_ptr(V));

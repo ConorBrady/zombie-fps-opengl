@@ -19,6 +19,8 @@ private:
 	float _strafeSpeed;
 
 	float _lastUpdateTime;
+
+	float _runStart;
 public:
 	Camera(vec3 xyz, float pitch, float yaw);
 
