@@ -71,7 +71,7 @@ void Camera::update(uint shader, float time) {
 
 		float secondsPassed = time - _lastUpdateTime;
 
-		_xyz.z -= secondsPassed*_strideSpeed*cos(_pitch);
+		//_xyz.z -= secondsPassed*_strideSpeed*cos(_pitch);
 		_xyz.x += secondsPassed*_strideSpeed*sin(_pitch)*sin(_yaw);
 		_xyz.y += secondsPassed*_strideSpeed*sin(_pitch)*cos(_yaw);
 
@@ -94,11 +94,15 @@ void Camera::update(uint shader, float time) {
 
 	V = rotate(mat4(1.0),_pitch,vec3(-1,0,0));
 	V = rotate(V,_yaw,vec3(0,0,1));
-	V = translate(V,vec3(-_xyz.x,-_xyz.y,-_xyz.z));
+	V = translate(V,vec3(-_xyz.x,-_xyz.y,-_xyz.z-5));
 
 	int V_loc = glGetUniformLocation (shader, "V");
 	glUniformMatrix4fv (V_loc, 1, GL_FALSE, glm::value_ptr(V));
 
 	_lastUpdateTime = time;
 
+}
+
+glm::vec3 Camera::getLocation() {
+	return _xyz;
 }

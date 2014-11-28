@@ -3,6 +3,10 @@
 
 #define GLM_FORCE_RADIANS
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 // Encapsulation of an interpolatable animation of a set of key framed matrices.
 // Allows for easy access to an interpolated transform matrix given a time in
 // the animation.

@@ -46,5 +46,5 @@ void main () {
 	float specular_factor = pow (dot_prod_specular, specular_exponent);
 	vec3 Is = Ls * Ks * specular_factor; // final specular intensity
 
-	fragment_colour = vec4 (Is + Id + Ia, 1.0)*light_intensity;
+	fragment_colour = texture(uni_tex,tex_coords)*vec4 (Is + Id + Ia, 1.0)*light_intensity;
 }

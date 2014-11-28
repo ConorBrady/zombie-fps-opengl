@@ -25,4 +25,6 @@ public:
 	void signal(ControlSignal cs, float value);
 
 	void update(uint shader, float time);
+
+	glm::vec3 getLocation();
 };

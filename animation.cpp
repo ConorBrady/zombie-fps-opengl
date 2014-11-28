@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "glm/gtx/matrix_interpolation.hpp"
+
 glm::quat _quatCast(const aiQuaternion &value)
 {
 	return glm::quat(value.w, value.x, value.y, value.z);

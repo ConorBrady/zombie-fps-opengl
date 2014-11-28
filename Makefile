@@ -10,6 +10,7 @@ SOURCES = \
 	landscape.cpp \
 	main.cpp \
 	mesh.cpp \
+	player.cpp \
 	shader_loader.cpp \
 	window.cpp \
 	zombie.cpp
