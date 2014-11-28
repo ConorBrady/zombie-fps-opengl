@@ -39,26 +39,8 @@ Mesh::Mesh(const char* filename) {
 	glGenVertexArrays(1,&_vao);
 	glBindVertexArray(_vao);
 
-	_polyCount = 0;
-	for (int i = 0; i < meshes.size(); i++) {
-		_polyCount += meshes[i]->mNumVertices;
-	}
+	_polyCount = meshes[0]->mNumVertices;
 
-	{
-		float* vertices = (float*)malloc(sizeof(float)*_polyCount*3);
-		int offset = 0;
-		for(int i = 0; i < meshes.size(); i++) {
-			int count = meshes[i]->mNumVertices*3;
-			memcpy(&vertices[offset],meshes[i]->mVertices,count*sizeof(float));
-			offset += count;
-		}
-
-		glGenBuffers(1, &buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*_polyCount, vertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, 0, 0, 0);
-	}
 
 	{
 
@@ -73,26 +55,23 @@ Mesh::Mesh(const char* filename) {
 		glGenBuffers(1, &buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*_polyCount, normals, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, 0, 0, 0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, 0, 0, 0);
 	}
 
 	{
 		float *texCoords = (float*)malloc(sizeof(float)*_polyCount*2);
-		int offset = 0;
-		for (int k = 0; k < meshes.size(); k++) {
-			for(int i = 0; i < meshes[k]->mNumVertices; i++) {
-				texCoords[offset+i*2]   = meshes[k]->mTextureCoords[0][i].x;
-				texCoords[offset+i*2+1] = meshes[k]->mTextureCoords[0][i].y;
-			}
-			offset += meshes[k]->mNumVertices*2;
+
+		for(int i = 0; i < meshes[0]->mNumVertices; i++) {
+			texCoords[i*2]   = meshes[0]->mTextureCoords[0][i].x;
+			texCoords[i*2+1] = meshes[0]->mTextureCoords[0][i].y;
 		}
 
 		glGenBuffers(1, &buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*2*_polyCount, texCoords, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, 0, 0, 0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, 0, 0, 0);
 	}
 
 	// load bone influence
@@ -122,10 +101,19 @@ Mesh::Mesh(const char* filename) {
 	glGenBuffers(1,&buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(BoneInfluence)*_polyCount,bone_influence,GL_STATIC_DRAW);
+	glEnableVertexAttribArray(2);
+	glVertexAttribIPointer(2, 4, GL_INT, sizeof(BoneInfluence), (const GLvoid*)0);
 	glEnableVertexAttribArray(3);
-	glVertexAttribIPointer(3, 4, GL_INT, sizeof(BoneInfluence), (const GLvoid*)0);
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(BoneInfluence), (const GLvoid*)16);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(BoneInfluence), (const GLvoid*)16);
+
+	for(int i = 0; i < meshes.size(); i++){
+		glGenBuffers(1, &buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*_polyCount, meshes[i]->mVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(4+i);
+		std::cout << "Loaded "<< (4+i) << std::endl;
+		glVertexAttribPointer(4+i, 3, GL_FLOAT, 0, 0, 0);
+	}
 
 	// unbind buffers
 	glBindBuffer(GL_ARRAY_BUFFER,0);

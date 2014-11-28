@@ -47,7 +47,7 @@ void main () {
 	vec3 Is = Ls * Ks * specular_factor; // final specular intensity
 	vec4 col = texture(uni_tex,tex_coords);
 
-	fragment_colour = col*vec4 (Is + Id + Ia, 1.0)*sqrt(light_intensity)*sqrt(col.g);
+	fragment_colour = col*vec4 (Is + Id + Ia, 1.0)*light_intensity*sqrt(col.g);
 
 
 }

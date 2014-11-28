@@ -20,6 +20,12 @@ Landscape* Landscape::getLandscape() {
 
 void Landscape::draw(unsigned int shader, float time) {
 	int M_loc = glGetUniformLocation (shader, "M");
+
 	glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
+
+	int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
+	int MIX = glGetUniformLocation(shader,"MIX");
+	glUniform1f(MIX,0);
+	glUniform1f(M1S,1);
 	_mesh->draw(shader, time);
 }
