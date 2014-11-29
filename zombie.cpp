@@ -25,6 +25,9 @@
 
 static Mesh* _mesh = NULL;
 
+static std::default_random_engine generator;
+static std::normal_distribution<double> distribution(1.0,0.4);
+
 IFollowable* Zombie::_nearestFollowable() {
 
 	if(_followables.size()==0) {
@@ -50,8 +53,7 @@ Zombie::Zombie(glm::vec3 location) {
 	_location = location;
 	_yaw = 0;
 
-	static std::default_random_engine generator;
-	static std::normal_distribution<double> distribution(1.0,0.8);
+
 	_speedFactor = distribution(generator);
 	_lastDrawTime = -1;
 	_series = (int*)malloc(sizeof(int)*SERIES_SIZE);
@@ -79,8 +81,8 @@ void Zombie::draw(unsigned int shader, float time) {
 		if(dYaw>(time-_lastDrawTime)*YAW_SPEED || dYaw<-(time-_lastDrawTime)*YAW_SPEED) {
 			_yaw += (time-_lastDrawTime)*YAW_SPEED*(dYaw>0?1:-1);
 		} else {
-			_location.x -= sin(_yaw)*FOOT_SPEED;
-			_location.y -= cos(_yaw)*FOOT_SPEED;
+			_location.x -= sin(_yaw)*FOOT_SPEED*_speedFactor;
+			_location.y -= cos(_yaw)*FOOT_SPEED*_speedFactor;
 		}
 	}
 	_lastDrawTime = time;
