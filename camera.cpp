@@ -73,7 +73,7 @@ void Camera::signal(ControlSignal cs, float value) {
 
 void Camera::update(uint shader, float time) {
 
-	float bounce = 0;
+	_bounce = 0;
 	if( _lastUpdateTime > 0 ) {
 
 		float secondsPassed = time - _lastUpdateTime;
@@ -82,7 +82,7 @@ void Camera::update(uint shader, float time) {
 			_runStart = time;
 		}
 		if(_strideSpeed != 0 ) {
-			bounce = fabs(sin((time-_runStart)*BOUNCE_SPEED)*BOUNCE_HEIGHT);
+			_bounce = fabs(sin((time-_runStart)*BOUNCE_SPEED)*BOUNCE_HEIGHT);
 		}
 
 		//_xyz.z -= secondsPassed*_strideSpeed*cos(_pitch); // NO FLYING
@@ -104,17 +104,20 @@ void Camera::update(uint shader, float time) {
 		}
 	}
 
+	int V_loc = glGetUniformLocation (shader, "V");
+	glUniformMatrix4fv (V_loc, 1, GL_FALSE, glm::value_ptr(getViewMatrix()));
+
+	_lastUpdateTime = time;
+
+}
+
+glm::mat4 Camera::getViewMatrix() {
 	mat4 V;
 
 	V = rotate(mat4(1.0),_pitch,vec3(-1,0,0));
 	V = rotate(V,_yaw,vec3(0,0,1));
-	V = translate(V,vec3(-_xyz.x,-_xyz.y,-_xyz.z-5-bounce));
-
-	int V_loc = glGetUniformLocation (shader, "V");
-	glUniformMatrix4fv (V_loc, 1, GL_FALSE, glm::value_ptr(V));
-
-	_lastUpdateTime = time;
-
+	V = translate(V,vec3(-_xyz.x,-_xyz.y,-_xyz.z-5-_bounce));
+	return V;
 }
 
 glm::vec3 Camera::getLocation() {

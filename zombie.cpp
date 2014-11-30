@@ -63,7 +63,7 @@ Zombie::Zombie(glm::vec3 location) {
 			_series[i] = (i+rand())%KEY_FRAMES+1;
 		}
 	}
-	std::cout << std::endl;
+	
 	_seriesIndex = 0;
 }
 

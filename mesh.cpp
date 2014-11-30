@@ -73,7 +73,7 @@ Mesh::Mesh(const char* filename) {
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 2, GL_FLOAT, 0, 0, 0);
 	}
-
+	
 	// load bone influence
 	typedef struct {
 		int bone_ids[4];
@@ -111,7 +111,6 @@ Mesh::Mesh(const char* filename) {
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*_polyCount, meshes[i]->mVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(4+i);
-		std::cout << "Loaded "<< (4+i) << std::endl;
 		glVertexAttribPointer(4+i, 3, GL_FLOAT, 0, 0, 0);
 	}
 

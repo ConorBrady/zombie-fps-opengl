@@ -21,6 +21,7 @@ private:
 	float _lastUpdateTime;
 
 	float _runStart;
+	float _bounce;
 public:
 	Camera(vec3 xyz, float pitch, float yaw);
 
@@ -28,5 +29,6 @@ public:
 
 	void update(uint shader, float time);
 
+	glm::mat4 getViewMatrix();
 	glm::vec3 getLocation();
 };

@@ -10,7 +10,7 @@ using namespace std;
 
 int main () {
 
-	Window* window = new Window(800,800);
+	Window* window = new Window(1200,1000);
 	Shader* shader = new Shader("shader.vert","shader.frag");
 
 
@@ -39,6 +39,7 @@ int main () {
 			}
 		}
 		landscape->draw(*shader,last_tick);
+		player->draw(*shader,last_tick);
 		window->pollEvents();
 		window->presentBuffer();
 
