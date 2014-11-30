@@ -7,6 +7,7 @@ SOURCES = \
 	bone.cpp \
 	bone_animation.cpp \
 	camera.cpp \
+	gun.cpp \
 	landscape.cpp \
 	main.cpp \
 	mesh.cpp \
