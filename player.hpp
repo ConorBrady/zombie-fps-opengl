@@ -13,7 +13,12 @@ private:
 	Mesh* _gun;
 	float _gunPitch;
 	float _gunYaw;
-	
+	float _gunRandomPitch;
+	float _gunRandomYaw;
+	bool _fireGun;
+	float _gunShotTime;
+	float _lastTick;
+
 public:
 	Player(glm::vec3 location);
 	glm::vec3 getLocation();

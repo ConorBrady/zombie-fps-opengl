@@ -38,6 +38,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if(key == GLFW_KEY_RIGHT) {
 			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_X,1.0f);
 		}
+
+		if(key == GLFW_KEY_SPACE) {
+			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_ACTION,1);
+		}
 	}
 
 	if (action == GLFW_RELEASE) {
@@ -85,6 +89,16 @@ void cursorPositionCallback(GLFWwindow * window, double x, double y) {
 	windowControl->dispatchMessage(CONTROL_SIGNAL_ALT_Y,dpitch);
 }
 
+void mouseButtonCallback(GLFWwindow * window, int button, int action, int mods) {
+
+	Window* windowControl = windows[window];
+	
+	if(button==GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+		windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_ACTION,1);
+	}
+}
+
+
 void windowSizeCallback(GLFWwindow* window, int width, int height) {
 	windows[window]->didResize();
 }
@@ -110,6 +124,8 @@ Window::Window(double width, double height) {
 
 	glfwSetCursorPosCallback(_window, cursorPositionCallback);
 	glfwSetWindowSizeCallback(_window, windowSizeCallback);
+	glfwSetMouseButtonCallback(_window, mouseButtonCallback);
+
 	windows[_window] = this;
 
 	glewExperimental = GL_TRUE;
