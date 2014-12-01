@@ -9,4 +9,5 @@ private:
 public:
 	Bullet(float time, glm::vec3 startPos, float pitch, float yaw);
 	glm::vec3 getWorldPosAtTime(float time);
+	void draw(int shader, float time);
 };

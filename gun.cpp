@@ -24,10 +24,12 @@ Gun::Gun(Camera* camera) {
 void Gun::update(uint shader, float time) {
 	if(_fireGun) {
 		_fireGun = false;
-		_gunShotTime = time;
-
-		_bullets[(_lastBulletIndex+1)%BULLET_COUNT] = new Bullet(time, getWorldPosition(), _camera->getPitch()+_altY, _camera->getYaw()+_altX);
-		_lastBulletIndex = (_lastBulletIndex+1)%BULLET_COUNT;
+		if(time-_gunShotTime > 0.5) {
+			_gunShotTime = time;
+		
+			_bullets[(_lastBulletIndex+1)%BULLET_COUNT] = new Bullet(time, getWorldPosition(), _camera->getPitch()+_altY, _camera->getYaw()+_altX);
+			_lastBulletIndex = (_lastBulletIndex+1)%BULLET_COUNT;
+		}
 	}
 	_gunRanPitchAcceleration = distribution(generator)-_gunRanPitch/3;
 	_gunRanYawAcceleration = distribution(generator)-_gunRanYaw/3;
@@ -95,6 +97,12 @@ void Gun::draw(uint shader, float time) {
 	glUniform1f(M1S,1);
 	_mesh->draw(shader,time);
 
+	for(int i = 0; i < BULLET_COUNT; i++) {
+		if(_bullets[i]!=NULL){
+			_bullets[i]->draw(shader,time);
+		}
+	}
+
 }
 
 glm::mat4 Gun::_M(float time) {
@@ -113,7 +121,7 @@ glm::mat4 Gun::_M(float time) {
 }
 
 glm::vec3 Gun::getWorldPosition(){
-	return glm::vec3(_camera->getLocation().x,_camera->getLocation().y,_camera->getLocation().z+5);
+	return glm::vec3(_M(0)*glm::vec4(0,0,0,1));
 }
 
 void Gun::signal(ControlSignal cs, float value) {
