@@ -38,6 +38,22 @@ void Gun::update(uint shader, float time) {
 	_gunRanPitchSpeed += _gunRanPitchAcceleration*(time-_lastTick)*RANDOM_SPEED;
 	_gunRanYawSpeed += _gunRanYawAcceleration*(time-_lastTick)*RANDOM_SPEED;
 
+	if( _gunRanPitch > M_PI/3 ) {
+		_gunRanPitch = 0;
+	}
+
+	if( _gunRanPitch < -M_PI/3 ) {
+		_gunRanPitch = 0;
+	}
+
+	if( _gunRanYaw > M_PI/3 ) {
+		_gunRanYaw = 0;
+	}
+
+	if( _gunRanYaw < -M_PI/3 ) {
+		_gunRanYaw = 0;
+	}
+
 	std::vector<glm::mat3> lights {  glm::mat3(  1.0,  0.8, 0.8, 	// Ls
 												1.0,  0.0, 0.0, 	// Ld
 												0.02, 0.04, 0.0 ),
