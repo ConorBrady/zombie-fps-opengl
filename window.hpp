@@ -13,6 +13,7 @@ private:
 	vector<IControllable*> _controllables;
 	GLFWwindow* _window;
 	unsigned int _shaderId;
+	float _aspectRatio;
 public:
 	Window(double width, double height);
 
@@ -22,6 +23,7 @@ public:
 
 	bool shouldClose();
 	float getTime();
+	float getAspectRatio();
 
 	void setShader(unsigned int shader);
 	void didResize();

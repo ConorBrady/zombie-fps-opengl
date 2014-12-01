@@ -29,6 +29,9 @@ public:
 
 	void update(uint shader, float time);
 
+	float getPitch();
+	float getYaw();
+	
 	glm::mat4 getViewMatrix();
 	glm::vec3 getLocation();
 };

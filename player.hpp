@@ -1,4 +1,3 @@
-#include "camera.hpp"
 
 #include "glm/glm.hpp"
 

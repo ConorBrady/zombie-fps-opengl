@@ -1,16 +1,21 @@
 #include "window.hpp"
 
 #include <map>
+#include <iostream>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #define GLM_FORCE_RADIANS
 
+#define FIELD_OF_VIEW (M_PI/3.0)
+
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
 #include "controller_interface.hpp"
+
+using namespace std;
 
 static map<GLFWwindow*,Window*> windows;
 
@@ -19,38 +24,54 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	Window* windowControl = windows[window];
 
 	if (action==GLFW_PRESS){
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
+		switch(key) {
+			case GLFW_KEY_ESCAPE:
+				glfwSetWindowShouldClose(window, GL_TRUE);
+				break;
+		 	case GLFW_KEY_UP:
+			case GLFW_KEY_W:
+				windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_Y,1.0f);
+				break;
 
-		if (key == GLFW_KEY_UP) {
-			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_Y,1.0f);
-		}
+		 	case GLFW_KEY_DOWN:
+			case GLFW_KEY_S:
+				windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_Y,-1.0f);
+				break;
 
-		if (key == GLFW_KEY_DOWN) {
-			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_Y,-1.0f);
-		}
+		  	case GLFW_KEY_LEFT:
+			case GLFW_KEY_A:
+				windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_X,-1.0f);
+				break;
 
-		if(key == GLFW_KEY_LEFT) {
-			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_X,-1.0f);
-		}
+			case GLFW_KEY_RIGHT:
+			case GLFW_KEY_D:
+				windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_X,1.0f);
+				break;
 
-		if(key == GLFW_KEY_RIGHT) {
-			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_X,1.0f);
-		}
-
-		if(key == GLFW_KEY_SPACE) {
-			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_ACTION,1);
+			case GLFW_KEY_SPACE:
+				windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_ACTION,1);
+				break;
+			default:
+				break;
 		}
 	}
 
 	if (action == GLFW_RELEASE) {
-		if(key == GLFW_KEY_UP || key == GLFW_KEY_DOWN) {
-			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_Y,0.0f);
-		}
-
-		if(key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT) {
-			windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_X,0.0f);
+		switch(key) {
+			case GLFW_KEY_UP:
+			case GLFW_KEY_W:
+			case GLFW_KEY_DOWN:
+			case GLFW_KEY_S:
+				windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_Y,0.0f);
+				break;
+			case GLFW_KEY_LEFT:
+			case GLFW_KEY_A:
+			case GLFW_KEY_RIGHT:
+			case GLFW_KEY_D:
+				windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_X,0.0f);
+				break;
+			default:
+				break;
 		}
 	}
 }
@@ -81,18 +102,16 @@ void cursorPositionCallback(GLFWwindow * window, double x, double y) {
 	}
 
 	float dyaw = ((cursor_x-width/2)/width);
-
-	windowControl->dispatchMessage(CONTROL_SIGNAL_ALT_X,dyaw);
+	windowControl->dispatchMessage(CONTROL_SIGNAL_ALT_X,dyaw*FIELD_OF_VIEW*windowControl->getAspectRatio());
 
 	float dpitch = (((height-cursor_y)-height/2)/height);
-
-	windowControl->dispatchMessage(CONTROL_SIGNAL_ALT_Y,dpitch);
+	windowControl->dispatchMessage(CONTROL_SIGNAL_ALT_Y,dpitch*FIELD_OF_VIEW);
 }
 
 void mouseButtonCallback(GLFWwindow * window, int button, int action, int mods) {
 
 	Window* windowControl = windows[window];
-	
+
 	if(button==GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
 		windowControl->dispatchMessage(CONTROL_SIGNAL_PRIMARY_ACTION,1);
 	}
@@ -153,6 +172,9 @@ float Window::getTime() {
 	return glfwGetTime();
 }
 
+float Window::getAspectRatio() {
+	return _aspectRatio;
+}
 void Window::setShader(unsigned int shader) {
 	_shaderId = shader;
 	didResize();
@@ -161,8 +183,8 @@ void Window::setShader(unsigned int shader) {
 void Window::didResize() {
 	int width, height;
 	glfwGetWindowSize(_window, &width, &height);
-
-	glm::mat4 P = glm::perspective(70.0f,(float)width/(float)height,0.1f,1000.0f);
+	_aspectRatio = (float)width/(float)height;
+	glm::mat4 P = glm::perspective((float)FIELD_OF_VIEW,_aspectRatio,0.1f,1000.0f);
 	int P_loc = glGetUniformLocation (_shaderId, "P");
 	glUniformMatrix4fv (P_loc, 1, GL_FALSE, glm::value_ptr(P));
 }

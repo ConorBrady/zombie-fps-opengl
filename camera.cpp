@@ -111,6 +111,14 @@ void Camera::update(uint shader, float time) {
 
 }
 
+float Camera::getPitch() {
+	return _pitch;
+}
+
+float Camera::getYaw() {
+	return _yaw;
+}
+
 glm::mat4 Camera::getViewMatrix() {
 	mat4 V;
 
