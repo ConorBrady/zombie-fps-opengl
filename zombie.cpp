@@ -55,7 +55,7 @@ Zombie::Zombie(glm::vec3 location) {
 
 
 	_speedFactor = distribution(generator);
-	_lastDrawTime = -1;
+	_lastTick = -1;
 	_series = (int*)malloc(sizeof(int)*SERIES_SIZE);
 	for(int i = 0; i < SERIES_SIZE; i++) {
 		_series[i] = (i+rand())%KEY_FRAMES+1;
@@ -63,14 +63,39 @@ Zombie::Zombie(glm::vec3 location) {
 			_series[i] = (i+rand())%KEY_FRAMES+1;
 		}
 	}
-	
+
 	_seriesIndex = 0;
+	_deadTime = -1;
 }
 
+glm::vec3 Zombie::getLocation() {
+	return _location;
+}
 
-void Zombie::draw(unsigned int shader, float time) {
+float Zombie::getCollidableHeight() {
+	return 5;
+}
 
-	if(_lastDrawTime > 0) {
+float Zombie::getCollidableRadius() {
+	return 1.2;
+}
+
+bool Zombie::isCollidable() {
+	return _deadTime < 0;
+}
+
+void Zombie::collided(ICollidable* collided) {
+	if(collided->getCollisionPoisons() & POISON_ZOMBIE) {
+		_deadTime = _lastTick;
+	}
+}
+
+int Zombie::getCollisionPoisons() {
+	return POISON_HUMAN;
+}
+
+void Zombie::update(float time) {
+	if(_lastTick > 0 && _deadTime < 0) {
 		IFollowable* nearestFollowable = _nearestFollowable();
 		float targetYaw = atan((nearestFollowable->getLocation().x-_location.x)/(nearestFollowable->getLocation().y-_location.y));
 		if(nearestFollowable->getLocation().y>_location.y) {
@@ -78,67 +103,72 @@ void Zombie::draw(unsigned int shader, float time) {
 		}
 		float dYaw = targetYaw - _yaw;
 		dYaw = fmod(dYaw + M_PI,M_PI*2)-M_PI;
-		if(dYaw>(time-_lastDrawTime)*YAW_SPEED || dYaw<-(time-_lastDrawTime)*YAW_SPEED) {
-			_yaw += (time-_lastDrawTime)*YAW_SPEED*(dYaw>0?1:-1);
+		if(dYaw>(time-_lastTick)*YAW_SPEED || dYaw<-(time-_lastTick)*YAW_SPEED) {
+			_yaw += (time-_lastTick)*YAW_SPEED*(dYaw>0?1:-1);
 		} else {
 			_location.x -= sin(_yaw)*FOOT_SPEED*_speedFactor;
 			_location.y -= cos(_yaw)*FOOT_SPEED*_speedFactor;
 		}
-	}
-	_lastDrawTime = time;
-	int M_loc = glGetUniformLocation (shader, "M");
- 	glm::mat4 M = glm::translate(glm::mat4(1.0),_location);
-	M = glm::rotate(M, -_yaw, glm::vec3(0,0,1));
-	glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(M));
 
+		int nextIndex = (_seriesIndex+1)%SERIES_SIZE;
+		float currentSine = sin(_lastTick*_speedFactor);
+		int newMode;
 
-	int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
-	int M2S = glGetUniformLocation(shader,"MESH_2_SELECT");
-	int MIX = glGetUniformLocation(shader,"MIX");
-	int nextIndex = (_seriesIndex+1)%SERIES_SIZE;
+		if(_previousSine < currentSine && currentSine > 0) {
+			newMode = INCREASING_POSITIVE;
+		} else if (_previousSine < currentSine && currentSine < 0) {
+			newMode = INCREASING_NEGATIVE;
+		} else if (_previousSine > currentSine && currentSine > 0) {
+			newMode = DECREASING_POSITIVE;
+		} else {
+			newMode = DECREASING_NEGATIVE;
+		}
 
-	float currentSine = sin(time*_speedFactor);
-	int newMode;
-	if(_previousSine < currentSine && currentSine > 0) {
-		newMode = INCREASING_POSITIVE;
-	} else if (_previousSine < currentSine && currentSine < 0) {
-		newMode = INCREASING_NEGATIVE;
-	} else if (_previousSine > currentSine && currentSine > 0) {
-		newMode = DECREASING_POSITIVE;
-	} else {
-		newMode = DECREASING_NEGATIVE;
-	}
+		if(newMode != _mode) {
+			_seriesIndex = nextIndex;
+			nextIndex = (_seriesIndex+1)%SERIES_SIZE;
+			_mode = newMode;
+		}
 
-	if(newMode != _mode) {
-		_seriesIndex = nextIndex;
-		nextIndex = (_seriesIndex+1)%SERIES_SIZE;
-		_mode = newMode;
-	}
-
-	float mix;
-	switch(_mode) {
-		case INCREASING_POSITIVE:
-			mix = currentSine;
+		switch(_mode) {
+			case INCREASING_POSITIVE:
+			_mix = currentSine;
 			break;
-		case INCREASING_NEGATIVE:
-			mix = 1+currentSine;
+			case INCREASING_NEGATIVE:
+			_mix = 1+currentSine;
 			break;
-		case DECREASING_POSITIVE:
-			mix = 1-currentSine;
+			case DECREASING_POSITIVE:
+			_mix = 1-currentSine;
 			break;
-		case DECREASING_NEGATIVE:
-			mix = fabs(currentSine);
+			case DECREASING_NEGATIVE:
+			_mix = fabs(currentSine);
 			break;
+		}
+		_previousSine = currentSine;
+
+	}
+	_lastTick = time;
+}
+
+void Zombie::draw(unsigned int shader) {
+
+	if(_deadTime < 0) {
+		int M_loc = glGetUniformLocation (shader, "M");
+	 	glm::mat4 M = glm::translate(glm::mat4(1.0),_location);
+		M = glm::rotate(M, -_yaw, glm::vec3(0,0,1));
+		glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(M));
+
+		int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
+		int M2S = glGetUniformLocation(shader,"MESH_2_SELECT");
+		int MIX = glGetUniformLocation(shader,"MIX");
+
+		glUniform1f(MIX,_mix);
+		glUniform1f(M1S,_series[_seriesIndex]);
+		glUniform1f(M2S,_series[(_seriesIndex+1)%SERIES_SIZE]);
+
+		_mesh->draw(shader, _lastTick);
 	}
 
-	glUniform1f(MIX,mix);
-
-	glUniform1f(M1S,_series[_seriesIndex]);
-	glUniform1f(M2S,_series[nextIndex]);
-
-	_mesh->draw(shader, time);
-
-	_previousSine = currentSine;
 }
 
 void Zombie::addFollowable(IFollowable* followable) {

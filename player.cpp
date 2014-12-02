@@ -14,11 +14,11 @@ void Player::signal(ControlSignal cs, float value) {
 
 void Player::update(unsigned int shader, float time) {
 	_camera->update(shader,time);
-	_gun->update(shader,time);
+	_gun->update(time);
 }
 
-void Player::draw(unsigned int shader, float time) {
-	_gun->draw(shader,time);
+void Player::draw(unsigned int shader) {
+	_gun->draw(shader);
 }
 
 glm::vec3 Player::getLocation() {

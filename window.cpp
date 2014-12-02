@@ -8,7 +8,7 @@
 
 #define GLM_FORCE_RADIANS
 
-#define FIELD_OF_VIEW (M_PI/3.0)
+#define FIELD_OF_VIEW (M_PI/2)
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"

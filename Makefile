@@ -8,6 +8,7 @@ SOURCES = \
 	bone_animation.cpp \
 	bullet.cpp \
 	camera.cpp \
+	collision_space.cpp \
 	gun.cpp \
 	landscape.cpp \
 	main.cpp \

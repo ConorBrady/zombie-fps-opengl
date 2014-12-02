@@ -15,6 +15,6 @@ public:
 	Player(glm::vec3 location);
 	glm::vec3 getLocation();
 	void update(uint shader, float time);
-	void draw(uint shader, float time);
+	void draw(uint shader);
 	void signal(ControlSignal cs, float value);
 };

@@ -1,4 +1,4 @@
-#define FPS 25.0
+#define FPS 60.0
 
 #include "player.hpp"
 #include "landscape.hpp"
@@ -9,6 +9,7 @@
 using namespace std;
 
 int main () {
+
 
 	Window* window = new Window(1200,1000);
 	Shader* shader = new Shader("shader.vert","shader.frag");
@@ -22,6 +23,7 @@ int main () {
 		for(int j = 0; j < 5; j++) {
 			zombies[i][j] = new Zombie(glm::vec3(i*10-20,j*10,0));
 			zombies[i][j]->addFollowable(player);
+			CollisionSpace::sharedCollisionSpace()->add(zombies[i][j]);
 		}
 	}
 
@@ -33,13 +35,23 @@ int main () {
 	while (!window->shouldClose()) {
 
 		player->update(*shader,last_tick);
+
 		for(int i = 0; i < 5; i++) {
 			for(int j = 0; j < 5; j++) {
-				zombies[i][j]->draw(*shader,last_tick);;
+				zombies[i][j]->update(last_tick);;
+			}
+		}
+
+		for(int i = 0; i < 5; i++) {
+			for(int j = 0; j < 5; j++) {
+				zombies[i][j]->draw(*shader);;
 			}
 		}
 		landscape->draw(*shader,last_tick);
-		player->draw(*shader,last_tick);
+		player->draw(*shader);
+
+		CollisionSpace::sharedCollisionSpace()->checkForCollisions();
+
 		window->pollEvents();
 		window->presentBuffer();
 

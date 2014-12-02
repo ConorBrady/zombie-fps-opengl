@@ -1,7 +1,8 @@
 #include "mesh.hpp"
 #include "controller_interface.hpp"
 #include "camera.hpp"
-#include "bullet.hpp"
+
+class Bullet;
 
 class Gun : public IControllable {
 private:
@@ -27,8 +28,8 @@ private:
 	glm::mat4 _M(float time);
 public:
 	Gun(Camera* camera);
-	void update(uint shader, float time);
-	void draw(uint shader, float time);
+	void update(float time);
+	void draw(uint shader);
 	void signal(ControlSignal cs, float value);
 	glm::vec3 getWorldPosition();
 };

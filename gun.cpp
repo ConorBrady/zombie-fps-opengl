@@ -1,4 +1,5 @@
 #include "gun.hpp"
+#include "bullet.hpp"
 
 #include <random>
 #include <iostream>
@@ -21,14 +22,17 @@ Gun::Gun(Camera* camera) {
 
 }
 
-void Gun::update(uint shader, float time) {
+void Gun::update(float time) {
 	if(_fireGun) {
 		_fireGun = false;
 		if(time-_gunShotTime > 0.5) {
 			_gunShotTime = time;
-		
-			_bullets[(_lastBulletIndex+1)%BULLET_COUNT] = new Bullet(time, getWorldPosition(), _camera->getPitch()+_altY, _camera->getYaw()+_altX);
-			_lastBulletIndex = (_lastBulletIndex+1)%BULLET_COUNT;
+			int index = (_lastBulletIndex+1)%BULLET_COUNT;
+			Bullet* bullet = new Bullet(time, getWorldPosition(), _camera->getPitch()+_altY, _camera->getYaw()+_altX, index);
+			CollisionSpace::sharedCollisionSpace()->add(bullet);
+			_bullets[index] = bullet;
+			_lastBulletIndex = index;
+
 		}
 	}
 	_gunRanPitchAcceleration = distribution(generator)-_gunRanPitch/3;
@@ -56,52 +60,40 @@ void Gun::update(uint shader, float time) {
 		_gunRanYaw = 0;
 	}
 
-	std::vector<glm::mat3> lights {  glm::mat3(  1.0,  0.8, 0.8, 	// Ls
-												1.0,  0.0, 0.0, 	// Ld
-												0.02, 0.04, 0.0 ),
-									glm::mat3(  1.0,  0.8, 0.8, 	// Ls
-												0.0,  0.6, 0.0, 	// Ld
-												0.02, 0.04, 0.0 ),
-									glm::mat3(  1.0,  0.8, 0.8, 	// Ls
-												0.0,  0.0, 0.6, 	// Ld
-												0.02, 0.04, 0.0 ),
-									glm::mat3(  1.0,  0.8, 0.8, 	// Ls
-												1.0,  1.0, 0.0, 	// Ld
-												0.02, 0.04, 0.0 ),
-									glm::mat3(  1.0,  0.8, 0.8, 	// Ls
-												0.0,  1.0, 1.0, 	// Ld
-												0.02, 0.04, 0.0 ) }; // La
+
 
 	for(int i = 0; i < BULLET_COUNT; i++) {
 		if(_bullets[i]!=NULL){
-			char buffer [50];
-			sprintf(buffer,"light_position_world[%d]",i);
-			glUniform3fv(glGetUniformLocation(shader,buffer),1,glm::value_ptr(_bullets[i]->getWorldPosAtTime(time)));
-			sprintf(buffer,"light_properties[%d]",i);
-			glUniformMatrix3fv(glGetUniformLocation(shader,buffer),1,GL_FALSE,glm::value_ptr(lights[i]));
+			_bullets[i]->update(time);
 		}
 	}
 
 	_lastTick = time;
 }
 
-void Gun::draw(uint shader, float time) {
+void Gun::draw(uint shader) {
 
+
+	for(int i = 0; i < BULLET_COUNT; i++) {
+		if(_bullets[i]!=NULL && _bullets[i]->isCollidable()){
+			_bullets[i]->draw(shader);
+		} else {
+			char buffer[50];
+			sprintf(buffer,"light_properties[%d]",i);
+			glUniformMatrix3fv(glGetUniformLocation(shader,buffer),1,GL_FALSE,glm::value_ptr(glm::mat3(0.0)));
+		}
+	}
 
 	int M_loc = glGetUniformLocation (shader, "M");
 
-	glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(_M(time)));
+	glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(_M(_lastTick)));
 	int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
 	int MIX = glGetUniformLocation(shader,"MIX");
 	glUniform1f(MIX,0);
 	glUniform1f(M1S,1);
-	_mesh->draw(shader,time);
+	_mesh->draw(shader,_lastTick);
 
-	for(int i = 0; i < BULLET_COUNT; i++) {
-		if(_bullets[i]!=NULL){
-			_bullets[i]->draw(shader,time);
-		}
-	}
+
 
 }
 
