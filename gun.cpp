@@ -19,7 +19,7 @@ Gun::Gun(Camera* camera) {
 	_bullets = (Bullet**)calloc(BULLET_COUNT,sizeof(Bullet*));
 	_lastBulletIndex = 0;
 	_lastTick = 0;
-
+	_gunShotTime = -10;
 }
 
 void Gun::update(float time) {
