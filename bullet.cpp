@@ -25,7 +25,7 @@ static std::vector<glm::mat3> lights {  glm::mat3(  1.0,  0.4, 0.4,	// Ls
 
 Bullet::Bullet(float time, glm::vec3 startPos, float pitch, float yaw, int index) {
 	if(_mesh==NULL) {
-		_mesh = new Mesh("resources/shotgun.dae");
+		_mesh = new Mesh("resources/bullet.dae");
 	}
 	_createdAt = time;
 	_initialWorldPos = startPos;
@@ -81,7 +81,7 @@ void Bullet::draw(int shader) {
 		int M_loc = glGetUniformLocation (shader, "M");
 		glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(	glm::translate(glm::mat4(1.0),getLocation())*
 															  	glm::rotate(glm::mat4(1.0),-_yaw,glm::vec3(0,0,1))*
-																glm::rotate(glm::mat4(1.0),_pitch,glm::vec3(1,0,0))));
+																glm::rotate(glm::mat4(1.0),(float)(_pitch+M_PI/2),glm::vec3(1,0,0))));
 		int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
 		int MIX = glGetUniformLocation(shader,"MIX");
 		glUniform1f(MIX,0);

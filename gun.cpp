@@ -113,16 +113,16 @@ glm::mat4 Gun::_M(float time) {
 }
 
 glm::vec3 Gun::getWorldPosition(){
-	return glm::vec3(_M(0)*glm::vec4(0,0,0,1));
+	return glm::vec3(_M(0)*glm::vec4(-0.2,0.1,0,1));
 }
 
 void Gun::signal(ControlSignal cs, float value) {
 	switch(cs) {
 		case CONTROL_SIGNAL_ALT_X:
-			_altX = value;
+			_altX = value*1.25;
 			break;
 		case CONTROL_SIGNAL_ALT_Y:
-			_altY = value;
+			_altY = value*1.25;
 			break;
 		case CONTROL_SIGNAL_PRIMARY_ACTION:
 			_fireGun = true;
