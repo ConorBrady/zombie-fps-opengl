@@ -2,7 +2,7 @@
 
 #include "mesh.hpp"
 
-#define BULLET_SPEED 50
+#define BULLET_SPEED 20
 
 static Mesh* _mesh;
 

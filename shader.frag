@@ -111,16 +111,16 @@ void main () {
 		vec3 La = light_properties[i][2];
 
 		vec3 light_position_eye = vec3 (V * vec4 (light_position_world[i], 1.0));
-		if(Ld != vec3(0)) {
+		float lightDist = length(light_position_eye);
+		if(lightDist<50) {
 			float dist = distToLine(position_eye,vec3(0),light_position_eye);
-			float lightDist = length(light_position_eye);
-			float thisStrength = (1/(1+pow(dist/5,2)))*abs(sin(dist))*(1/(1+pow(lightDist/100,2)));
-
-			strength = max(strength,thisStrength);
-			glow += Ld*thisStrength;
-
+			if(dist < 7 ) {
+				
+				float thisStrength = (1/(1+pow(dist/5,2)))*abs(sin(dist))*(1/(1+pow(lightDist/20,2)));
+				strength = max(strength,thisStrength);
+				glow += Ld*thisStrength;
+			}
 		}
-
 	}
 	fragment_color = fragment_color*(1-strength)+vec4(glow*strength,1.0);
 }
