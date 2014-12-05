@@ -19,7 +19,7 @@
 
 using namespace std;
 
-static int _countingTextureIndex = 0;;
+static int _countingTextureIndex = 1;
 
 Mesh::Mesh(const char* filename) {
 
@@ -73,7 +73,7 @@ Mesh::Mesh(const char* filename) {
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 2, GL_FLOAT, 0, 0, 0);
 	}
-	
+
 	// load bone influence
 	typedef struct {
 		int bone_ids[4];
@@ -153,9 +153,7 @@ Mesh::Mesh(const char* filename) {
 }
 
 
-void Mesh::draw(GLuint shader, double time) {
-	GLuint bones_loc = glGetUniformLocation (shader, "BONES");
-	glUniformMatrix4fv (bones_loc, _boneAnimation->numBones(), GL_FALSE, _boneAnimation->getBonesAtTime(time));
+void Mesh::draw(GLuint shader) {
 
 	GLuint textureLoc = glGetUniformLocation(shader, "uni_tex");
 	glUniform1i(textureLoc, _textureIndex);

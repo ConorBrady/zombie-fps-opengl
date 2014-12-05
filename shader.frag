@@ -16,7 +16,27 @@ vec3 Ka = vec3 (1.0, 1.0, 1.0);
 
 float specular_exponent = 100.0; // specular 'power'
 
-out vec4 fragment_colour; // final colour of surface
+out vec4 fragment_color; // final colour of surface
+
+
+float distToLine(vec3 a, vec3 b, vec3 Point)
+{
+	vec3 c = Point - a;	// Vector from a to Point
+	vec3 v = normalize(b - a);	// Unit Vector from a to b
+	float d = length(b - a);	// Length of the line segment
+	float t = dot(v,c);	// Intersection point Distance from a
+
+	// Check to see if the point is on the line
+	// if not then return the endpoint
+	if(t < 0) return 1000;
+	if(t > d) return 1000;
+
+	// get the distance to move from point a
+	v *= t;
+
+	// move from point a to the nearest point on the segment
+	return distance( a + v, Point);
+}
 
 void main () {
 	vec3 light = vec3(0,0,0);
@@ -80,7 +100,27 @@ void main () {
 
 	vec4 col = texture(uni_tex,tex_coords);
 
-	fragment_colour = col*vec4(light , 1.0);
+	fragment_color = col*vec4(light , 1.0);
 
+	vec3 glow = vec3(0);
+	float strength = 0;
+	for(int i = 0; i < 5; i++) {
 
+		vec3 Ls = light_properties[i][0];
+		vec3 Ld = light_properties[i][1];
+		vec3 La = light_properties[i][2];
+
+		vec3 light_position_eye = vec3 (V * vec4 (light_position_world[i], 1.0));
+		if(Ld != vec3(0)) {
+			float dist = distToLine(position_eye,vec3(0),light_position_eye);
+			float lightDist = length(light_position_eye);
+			float thisStrength = (1/(1+pow(dist/5,2)))*abs(sin(dist))*(1/(1+pow(lightDist/100,2)));
+
+			strength = max(strength,thisStrength);
+			glow += Ld*thisStrength;
+
+		}
+
+	}
+	fragment_color = fragment_color*(1-strength)+vec4(glow*strength,1.0);
 }

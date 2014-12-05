@@ -33,6 +33,7 @@ public:
 	float getCollidableHeight();
 	float getCollidableRadius();
 	bool isCollidable();
+	bool isAlive();
 	void collided(ICollidable* collided);
 	int getCollisionPoisons();
 

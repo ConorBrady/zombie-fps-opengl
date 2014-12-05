@@ -1,6 +1,7 @@
 #include "zombie.hpp"
 
 #include "mesh.hpp"
+#include "score_manager.hpp"
 
 #include <iostream>
 
@@ -77,16 +78,21 @@ float Zombie::getCollidableHeight() {
 }
 
 float Zombie::getCollidableRadius() {
-	return 1.2;
+	return 1.3;
 }
 
 bool Zombie::isCollidable() {
+	return isAlive();
+}
+
+bool Zombie::isAlive() {
 	return _deadTime < 0;
 }
 
 void Zombie::collided(ICollidable* collided) {
 	if(collided->getCollisionPoisons() & POISON_ZOMBIE) {
 		_deadTime = _lastTick;
+		ScoreManager::getSharedScoreManager()->registerZombieKill();
 	}
 }
 
@@ -166,7 +172,7 @@ void Zombie::draw(unsigned int shader) {
 		glUniform1f(M1S,_series[_seriesIndex]);
 		glUniform1f(M2S,_series[(_seriesIndex+1)%SERIES_SIZE]);
 
-		_mesh->draw(shader, _lastTick);
+		_mesh->draw(shader);
 	}
 
 }

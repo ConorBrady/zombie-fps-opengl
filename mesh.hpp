@@ -11,5 +11,5 @@ private:
 
 public:
 	Mesh(const char* filename);
-	void draw(GLuint shader, double time);
+	void draw(unsigned int shader);
 };

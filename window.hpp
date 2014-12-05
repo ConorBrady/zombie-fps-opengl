@@ -1,4 +1,5 @@
 #include <vector>
+#include <queue>
 
 #include "controller_interface.hpp"
 
@@ -14,6 +15,10 @@ private:
 	GLFWwindow* _window;
 	unsigned int _shaderId;
 	float _aspectRatio;
+	int _scoreTextId;
+	int _toastTextId;
+	float _toastDisplayTime;
+	queue<char*> _toastQueue;
 public:
 	Window(double width, double height);
 
@@ -27,7 +32,10 @@ public:
 
 	void setShader(unsigned int shader);
 	void didResize();
+	void updateScore(int score);
+	void drawText();
 	void presentBuffer();
 	void pollEvents();
 
+	void queueToast(char* toast);
 };

@@ -14,9 +14,12 @@ SOURCES = \
 	main.cpp \
 	mesh.cpp \
 	player.cpp \
+	score_manager.cpp \
 	shader_loader.cpp \
 	window.cpp \
-	zombie.cpp
+	zombie.cpp \
+	zombie_manager.cpp \
+	lib/text.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
 

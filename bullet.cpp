@@ -86,6 +86,6 @@ void Bullet::draw(int shader) {
 		int MIX = glGetUniformLocation(shader,"MIX");
 		glUniform1f(MIX,0);
 		glUniform1f(M1S,1);
-		_mesh->draw(shader,_lastTick);
+		_mesh->draw(shader);
 	}
 }

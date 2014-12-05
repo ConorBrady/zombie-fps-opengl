@@ -8,10 +8,12 @@
 
 #define GLM_FORCE_RADIANS
 
-#define FIELD_OF_VIEW (M_PI/2)
+#define FIELD_OF_VIEW (M_PI/3)
+#define TOAST_TIME 3
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "text/text.h"
 
 #include "controller_interface.hpp"
 
@@ -153,6 +155,10 @@ Window::Window(double width, double height) {
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc (GL_LESS);
 	glClearColor (0.0, 0.0, 0.0, 1.0);
+
+	init_text_rendering ("resources/freemono.png", "resources/freemono.meta", width, height);
+	_scoreTextId = add_text("",-0.75f, 0.5f, 100.0f, 0.5f, 0.5f, 1.0f, 1.0f);
+	_toastTextId = add_text("",-0.75f, 0.5f, 100.0f, 0.5f, 0.5f, 1.0f, 1.0f);
 }
 
 void Window::addControllable(IControllable* controllable) {
@@ -189,7 +195,34 @@ void Window::didResize() {
 	glUniformMatrix4fv (P_loc, 1, GL_FALSE, glm::value_ptr(P));
 }
 
+void Window::updateScore(int score) {
+	char tmp[7];
+	sprintf (tmp, "Score: %06d\n", score);
+	update_text (_scoreTextId, tmp);
+}
+
+void Window::queueToast(char* toast) {
+	_toastQueue.push(toast);
+}
+
+void Window::drawText() {
+	if(_toastQueue.size() > 0 ) {
+		if(_toastDisplayTime < 0 ) {
+			update_text (_toastTextId, _toastQueue.front());
+			_toastDisplayTime = getTime();
+		} else if( getTime()-_toastDisplayTime > TOAST_TIME) {
+			_toastDisplayTime = -1;
+			_toastQueue.pop();
+		}
+	} else {
+		update_text(_toastTextId, "");
+	}
+	draw_texts();
+	glUseProgram(_shaderId); // Undo sideeffect of draw_texts()
+}
+
 void Window::presentBuffer() {
+
 	glfwSwapBuffers(_window);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

@@ -18,6 +18,15 @@ Landscape* Landscape::getLandscape() {
 	return singleton;
 }
 
+Bounds* Landscape::getBounds() {
+	Bounds* b = (Bounds*)malloc(sizeof(Bounds));
+	b->x1 = -40;
+	b->x2 = 40;
+	b->y1 = -40;
+	b->y2 = 40;
+	return b;
+}
+
 void Landscape::draw(unsigned int shader, float time) {
 	int M_loc = glGetUniformLocation (shader, "M");
 
@@ -27,5 +36,5 @@ void Landscape::draw(unsigned int shader, float time) {
 	int MIX = glGetUniformLocation(shader,"MIX");
 	glUniform1f(MIX,0);
 	glUniform1f(M1S,1);
-	_mesh->draw(shader, time);
+	_mesh->draw(shader);
 }
