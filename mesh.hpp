@@ -1,13 +1,11 @@
 #include <GL/glew.h>
 
-#include "bone_animation.hpp"
-
 class Mesh {
 
 private:
 	GLuint _vao;
-	int _polyCount, _textureIndex;
-	BoneAnimation *_boneAnimation;
+	int _polyCount;
+	int _textureIndex;
 
 public:
 	Mesh(const char* filename);

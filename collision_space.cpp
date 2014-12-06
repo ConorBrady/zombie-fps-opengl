@@ -11,17 +11,17 @@ CollisionSpace* CollisionSpace::sharedCollisionSpace() {
 	return _singleton;
 }
 
-void CollisionSpace::add(ICollidable* collidable) {
-	_collidables.push_back(collidable);
+void CollisionSpace::addCylinder(ICollidableCylinder* collidable) {
+	_collidableCylinders.push_back(collidable);
 }
 
 void CollisionSpace::checkForCollisions() {
-	for(int i = 0; i < _collidables.size(); i++){
-		ICollidable* obj1 = _collidables[i];
+	for(int i = 0; i < _collidableCylinders.size(); i++){
+		ICollidableCylinder* obj1 = _collidableCylinders[i];
 		if(obj1->isCollidable()) {
-			for(int j = i+1; j < _collidables.size(); j++) {
+			for(int j = i+1; j < _collidableCylinders.size(); j++) {
 
-				ICollidable* obj2 = _collidables[j];
+				ICollidableCylinder* obj2 = _collidableCylinders[j];
 				if(obj2->isCollidable()) {
 
 					float z1 = obj1->getLocation().z;
@@ -47,4 +47,8 @@ void CollisionSpace::checkForCollisions() {
 			}
 		}
 	}
+}
+
+void CollisionSpace::clear() {
+	_collidableCylinders.clear();
 }

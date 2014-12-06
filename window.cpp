@@ -157,8 +157,8 @@ Window::Window(double width, double height) {
 	glClearColor (0.0, 0.0, 0.0, 1.0);
 
 	init_text_rendering ("resources/freemono.png", "resources/freemono.meta", width, height);
-	_scoreTextId = add_text("",-0.75f, 0.5f, 100.0f, 0.5f, 0.5f, 1.0f, 1.0f);
-	_toastTextId = add_text("",-0.75f, 0.5f, 100.0f, 0.5f, 0.5f, 1.0f, 1.0f);
+	_scoreTextId = add_text("",0.4f, -0.8f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+	_toastTextId = add_text("",0.4f, -0.7f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void Window::addControllable(IControllable* controllable) {
@@ -201,7 +201,7 @@ void Window::updateScore(int score) {
 	update_text (_scoreTextId, tmp);
 }
 
-void Window::queueToast(char* toast) {
+void Window::queueToast(const char* toast) {
 	_toastQueue.push(toast);
 }
 

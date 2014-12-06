@@ -149,7 +149,6 @@ Mesh::Mesh(const char* filename) {
 
 	ilShutDown();
 
-	_boneAnimation = new BoneAnimation(scene);
 }
 
 

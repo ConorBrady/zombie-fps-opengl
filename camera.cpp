@@ -8,6 +8,8 @@
 #define BOUNCE_HEIGHT 0.25
 #define BOUNCE_SPEED 7
 
+#include "landscape.hpp"
+
 #define GLM_FORCE_RADIANS
 
 #include "glm/glm.hpp"
@@ -16,19 +18,16 @@
 
 using namespace glm;
 
-Camera::Camera(vec3 xyz, float pitch, float yaw) {
+Camera::Camera(vec3 xyz, float pitch, float yaw, Bounds* worldBounds) {
 	_xyz = xyz;
 	_pitch = pitch;
 	_yaw = yaw;
 
-	_pitchSpeed = 0;
-	_yawSpeed = 0;
+	_worldBounds = worldBounds;
+}
 
-	_strideSpeed = 0;
-	_strafeSpeed = 0;
-
-	_lastUpdateTime = -1;
-	_runStart = 0;
+void Camera::setPos(vec3 xyz) {
+	_xyz = xyz;
 }
 
 void Camera::signal(ControlSignal cs, float value) {
@@ -87,7 +86,9 @@ void Camera::update(uint shader, float time) {
 
 		//_xyz.z -= secondsPassed*_strideSpeed*cos(_pitch); // NO FLYING
 		_xyz.x += secondsPassed*_strideSpeed*sin(_pitch)*sin(_yaw);
+		_xyz.x = fmax(fmin(_xyz.x,_worldBounds->x2),_worldBounds->x1);
 		_xyz.y += secondsPassed*_strideSpeed*sin(_pitch)*cos(_yaw);
+		_xyz.y = fmax(fmin(_xyz.y,_worldBounds->y2),_worldBounds->y1);
 
 		int strafeSpeedSign = (_strafeSpeed > 0) - (_strafeSpeed < 0);
 		_xyz.x += secondsPassed*fabs(_strafeSpeed)*sin(_yaw+strafeSpeedSign*M_PI/2);

@@ -20,10 +20,10 @@ Landscape* Landscape::getLandscape() {
 
 Bounds* Landscape::getBounds() {
 	Bounds* b = (Bounds*)malloc(sizeof(Bounds));
-	b->x1 = -40;
-	b->x2 = 40;
-	b->y1 = -40;
-	b->y2 = 40;
+	b->x1 = -49;
+	b->x2 = 49;
+	b->y1 = -49;
+	b->y2 = 49;
 	return b;
 }
 

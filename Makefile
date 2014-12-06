@@ -3,9 +3,6 @@ CC = g++
 CFLAGS = -std=c++11 `pkg-config glfw3 --cflags` `pkg-config glew --cflags` `pkg-config IL --cflags` `pkg-config assimp --cflags` -I ./include -g -Wall
 LDFLAGS= `pkg-config glfw3 --static --libs` `pkg-config glew --libs` `pkg-config IL --libs` `pkg-config assimp --libs`
 SOURCES = \
-	animation.cpp \
-	bone.cpp \
-	bone_animation.cpp \
 	bullet.cpp \
 	camera.cpp \
 	collision_space.cpp \

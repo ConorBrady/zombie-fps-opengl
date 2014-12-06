@@ -52,11 +52,9 @@ Zombie::Zombie(glm::vec3 location) {
 		_mesh = new Mesh("resources/zombie.dae");
 	}
 	_location = location;
-	_yaw = 0;
-
 
 	_speedFactor = distribution(generator);
-	_lastTick = -1;
+
 	_series = (int*)malloc(sizeof(int)*SERIES_SIZE);
 	for(int i = 0; i < SERIES_SIZE; i++) {
 		_series[i] = (i+rand())%KEY_FRAMES+1;
@@ -64,9 +62,6 @@ Zombie::Zombie(glm::vec3 location) {
 			_series[i] = (i+rand())%KEY_FRAMES+1;
 		}
 	}
-
-	_seriesIndex = 0;
-	_deadTime = -1;
 }
 
 glm::vec3 Zombie::getLocation() {
@@ -97,23 +92,25 @@ void Zombie::collided(ICollidable* collided) {
 }
 
 int Zombie::getCollisionPoisons() {
-	return POISON_HUMAN;
+	return POISON_HUMAN | POISON_BULLET;
 }
 
 void Zombie::update(float time) {
 	if(_lastTick > 0 && _deadTime < 0) {
 		IFollowable* nearestFollowable = _nearestFollowable();
-		float targetYaw = atan((nearestFollowable->getLocation().x-_location.x)/(nearestFollowable->getLocation().y-_location.y));
-		if(nearestFollowable->getLocation().y>_location.y) {
-			targetYaw = M_PI+targetYaw;
-		}
-		float dYaw = targetYaw - _yaw;
-		dYaw = fmod(dYaw + M_PI,M_PI*2)-M_PI;
-		if(dYaw>(time-_lastTick)*YAW_SPEED || dYaw<-(time-_lastTick)*YAW_SPEED) {
-			_yaw += (time-_lastTick)*YAW_SPEED*(dYaw>0?1:-1);
-		} else {
-			_location.x -= sin(_yaw)*FOOT_SPEED*_speedFactor;
-			_location.y -= cos(_yaw)*FOOT_SPEED*_speedFactor;
+		if(nearestFollowable != nullptr) {
+			float targetYaw = atan((nearestFollowable->getLocation().x-_location.x)/(nearestFollowable->getLocation().y-_location.y));
+			if(nearestFollowable->getLocation().y>_location.y) {
+				targetYaw = M_PI+targetYaw;
+			}
+			float dYaw = targetYaw - _yaw;
+			dYaw = fmod(dYaw + M_PI,M_PI*2)-M_PI;
+			if(dYaw>(time-_lastTick)*YAW_SPEED || dYaw<-(time-_lastTick)*YAW_SPEED) {
+				_yaw += (time-_lastTick)*YAW_SPEED*(dYaw>0?1:-1);
+			} else {
+				_location.x -= sin(_yaw)*FOOT_SPEED*_speedFactor;
+				_location.y -= cos(_yaw)*FOOT_SPEED*_speedFactor;
+			}
 		}
 
 		int nextIndex = (_seriesIndex+1)%SERIES_SIZE;

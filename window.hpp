@@ -17,8 +17,8 @@ private:
 	float _aspectRatio;
 	int _scoreTextId;
 	int _toastTextId;
-	float _toastDisplayTime;
-	queue<char*> _toastQueue;
+	float _toastDisplayTime = -1;
+	queue<const char*> _toastQueue;
 public:
 	Window(double width, double height);
 
@@ -37,5 +37,5 @@ public:
 	void presentBuffer();
 	void pollEvents();
 
-	void queueToast(char* toast);
+	void queueToast(const char* toast);
 };

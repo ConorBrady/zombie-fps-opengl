@@ -2,7 +2,13 @@
 
 #include "mesh.hpp"
 
-#define BULLET_SPEED 20
+#define BULLET_SPEED 50
+
+#define GLM_FORCE_RADIANS
+
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 static Mesh* _mesh;
 
@@ -31,7 +37,6 @@ Bullet::Bullet(float time, glm::vec3 startPos, float pitch, float yaw, int index
 	_initialWorldPos = startPos;
 	_yaw = yaw;
 	_pitch = pitch;
-	_hasCollided = false;
 	_index = index;
 }
 
@@ -44,11 +49,11 @@ glm::vec3 Bullet::getLocation() {
 }
 
 float Bullet::getCollidableHeight() {
-	return 0.1;
+	return 0.3;
 }
 
 float Bullet::getCollidableRadius() {
-	return 0.1;
+	return 0.3;
 }
 
 bool Bullet::isCollidable() {
@@ -56,11 +61,12 @@ bool Bullet::isCollidable() {
 }
 
 void Bullet::collided(ICollidable* collided) {
+	if(collided->getCollisionPoisons() & POISON_BULLET)
 	_hasCollided = true;
 }
 
 int Bullet::getCollisionPoisons() {
-	return POISON_ZOMBIE | POISON_HUMAN;
+	return POISON_ZOMBIE;
 }
 
 void Bullet::update(float time) {
@@ -70,22 +76,21 @@ void Bullet::update(float time) {
 }
 
 void Bullet::draw(int shader) {
-	if(!_hasCollided) {
 
-		char buffer [50];
-		sprintf(buffer,"light_position_world[%d]",_index);
-		glUniform3fv(glGetUniformLocation(shader,buffer),1,glm::value_ptr(getLocation()));
-		sprintf(buffer,"light_properties[%d]",_index);
-		glUniformMatrix3fv(glGetUniformLocation(shader,buffer),1,GL_FALSE,glm::value_ptr(lights[_index]));
+	char buffer [50];
+	sprintf(buffer,"light_position_world[%d]",_index);
+	glUniform3fv(glGetUniformLocation(shader,buffer),1,glm::value_ptr(getLocation()));
+	sprintf(buffer,"light_properties[%d]",_index);
+	glUniformMatrix3fv(glGetUniformLocation(shader,buffer),1,GL_FALSE,glm::value_ptr(lights[_index]));
 
-		int M_loc = glGetUniformLocation (shader, "M");
-		glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(	glm::translate(glm::mat4(1.0),getLocation())*
-															  	glm::rotate(glm::mat4(1.0),-_yaw,glm::vec3(0,0,1))*
-																glm::rotate(glm::mat4(1.0),(float)(_pitch+M_PI/2),glm::vec3(1,0,0))));
-		int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
-		int MIX = glGetUniformLocation(shader,"MIX");
-		glUniform1f(MIX,0);
-		glUniform1f(M1S,1);
-		_mesh->draw(shader);
-	}
+	int M_loc = glGetUniformLocation (shader, "M");
+	glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(	glm::translate(glm::mat4(1.0),getLocation())*
+														  	glm::rotate(glm::mat4(1.0),-_yaw,glm::vec3(0,0,1))*
+															glm::rotate(glm::mat4(1.0),(float)(_pitch+M_PI/2),glm::vec3(1,0,0))));
+	int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
+	int MIX = glGetUniformLocation(shader,"MIX");
+	glUniform1f(MIX,0);
+	glUniform1f(M1S,1);
+	_mesh->draw(shader);
+	
 }

@@ -3,26 +3,24 @@
 
 #include <vector>
 
-class Zombie : public IFollower, public ICollidable {
+class Zombie : public IFollower, public ICollidableCylinder {
 
 private:
 	glm::vec3 _location;
 	std::vector<IFollowable*> _followables;
-	float _lastTick;
-	float _yaw;
+	float _lastTick = -1;
+	float _yaw = 0;
 
 	int* _series;
-	int _seriesIndex;
-	float _previousSine;
-	int _mode;
-	float _mix;
-	float _speedFactor;
+	int _seriesIndex = 0;
+	float _previousSine = 0;
+	int _mode = 0;
+	float _mix = 0;
+	float _speedFactor = 0;
 
-	float _deadTime;
+	float _deadTime = -1;
 
 	IFollowable* _nearestFollowable();
-
-
 
 public:
 	Zombie(glm::vec3 location);

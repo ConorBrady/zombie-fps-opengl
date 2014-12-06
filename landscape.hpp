@@ -1,3 +1,6 @@
+
+#ifndef LANDSCAPE
+#define LANDSCAPE
 class Mesh;
 typedef struct {
 	float x1;
@@ -7,10 +10,11 @@ typedef struct {
 } Bounds;
 class Landscape {
 private:
-	Mesh* _mesh;
+	Mesh* _mesh = nullptr;
 
 public:
 	static Landscape* getLandscape();
 	Bounds* getBounds();
 	void draw(unsigned int shader, float time);
 };
+#endif

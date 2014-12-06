@@ -1,15 +1,16 @@
 #include "glm/glm.hpp"
 #include "collision_space.hpp"
 
-class Bullet : public ICollidable {
+class Bullet : public ICollidableCylinder {
 private:
 	float _createdAt;
 	glm::vec3 _initialWorldPos;
 	float _yaw;
 	float _pitch;
-	float _lastTick;
-	bool _hasCollided;
 	int _index;
+
+	float _lastTick = -1;
+	bool _hasCollided = false;
 
 public:
 	Bullet(float time, glm::vec3 startPos, float pitch, float yaw, int index);
