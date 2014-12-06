@@ -1,4 +1,5 @@
 #include "glm/glm.hpp"
+#include "follow_interface.hpp"
 #include <vector>
 
 #ifndef COLLISION_SPACE
@@ -10,10 +11,9 @@ enum Poison {
 	POISON_BULLET 	= 1 << 2
 };
 
-class ICollidable {
+class ICollidable : public ITrackable {
 
 public:
-	virtual glm::vec3 getLocation() = 0;
 	virtual bool isCollidable() = 0;
 	virtual void collided(ICollidable* collided) = 0;
 	virtual int getCollisionPoisons() = 0;

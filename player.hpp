@@ -6,14 +6,14 @@
 #include "follow_interface.hpp"
 #include "collision_space.hpp"
 
-class Player : public IControllable, public IFollowable, public ICollidableCylinder {
+class Player : public IControllable, public ICollidableCylinder {
 
 private:
 	Camera* _camera = nullptr;
 	Gun* _gun = nullptr;
 	bool _isDead = false;
 	glm::vec3 _initialPos;
-	
+
 public:
 	Player(glm::vec3 location, Bounds* worldBounds);
 	
@@ -26,7 +26,7 @@ public:
 
 	void signal(ControlSignal cs, float value);
 
-	#pragma mark ICollidable and IFollowable methods
+	#pragma mark ITrackable methods
 
 	glm::vec3 getLocation();
 

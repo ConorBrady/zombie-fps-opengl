@@ -29,14 +29,14 @@ static Mesh* _mesh = NULL;
 static std::default_random_engine generator;
 static std::normal_distribution<double> distribution(1.0,0.4);
 
-IFollowable* Zombie::_nearestFollowable() {
+ITrackable* Zombie::_nearestFollowable() {
 
 	if(_followables.size()==0) {
 		return NULL;
 	}
 
 	float minDistance = glm::distance(_followables[0]->getLocation(), _location);
-	IFollowable* minFollowable = _followables[0];
+	ITrackable* minFollowable = _followables[0];
 	for(int i = 1; i < _followables.size(); i++) {
 		float newDistance = glm::distance(_followables[i]->getLocation(), _location);
 		if(newDistance < minDistance) {
@@ -97,7 +97,7 @@ int Zombie::getCollisionPoisons() {
 
 void Zombie::update(float time) {
 	if(_lastTick > 0 && _deadTime < 0) {
-		IFollowable* nearestFollowable = _nearestFollowable();
+		ITrackable* nearestFollowable = _nearestFollowable();
 		if(nearestFollowable != nullptr) {
 			float targetYaw = atan((nearestFollowable->getLocation().x-_location.x)/(nearestFollowable->getLocation().y-_location.y));
 			if(nearestFollowable->getLocation().y>_location.y) {
@@ -174,6 +174,6 @@ void Zombie::draw(unsigned int shader) {
 
 }
 
-void Zombie::addFollowable(IFollowable* followable) {
+void Zombie::addFollowable(ITrackable* followable) {
 	_followables.push_back(followable);
 }

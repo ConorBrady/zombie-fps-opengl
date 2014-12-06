@@ -32,7 +32,7 @@ void Player::signal(ControlSignal cs, float value) {
 	_gun->signal(cs,value);
 }
 
-#pragma mark ICollidable and IFollowable methods
+#pragma mark ITrackable methods
 
 glm::vec3 Player::getLocation() {
 	return _camera->getLocation();

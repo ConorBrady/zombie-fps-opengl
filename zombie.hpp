@@ -7,7 +7,7 @@ class Zombie : public IFollower, public ICollidableCylinder {
 
 private:
 	glm::vec3 _location;
-	std::vector<IFollowable*> _followables;
+	std::vector<ITrackable*> _followables;
 	float _lastTick = -1;
 	float _yaw = 0;
 
@@ -20,7 +20,7 @@ private:
 
 	float _deadTime = -1;
 
-	IFollowable* _nearestFollowable();
+	ITrackable* _nearestFollowable();
 
 public:
 	Zombie(glm::vec3 location);
@@ -35,5 +35,5 @@ public:
 	void collided(ICollidable* collided);
 	int getCollisionPoisons();
 
-	void addFollowable(IFollowable* followable);
+	void addFollowable(ITrackable* followable);
 };

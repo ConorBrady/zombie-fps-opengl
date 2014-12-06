@@ -44,7 +44,7 @@ void ZombieManager::update(float time) {
 		}
 		Zombie* newZombie = new Zombie(glm::vec3(randx,randy,0));
 		CollisionSpace::sharedCollisionSpace()->addCylinder(newZombie);
-		for(IFollowable* f : _followables) {
+		for(ITrackable* f : _followables) {
 			newZombie->addFollowable(f);
 		}
 		_zombies.push_back(newZombie);
@@ -73,7 +73,7 @@ void ZombieManager::draw(unsigned int shader) {
 	}
 }
 
-void ZombieManager::addFollowable(IFollowable* followable) {
+void ZombieManager::addFollowable(ITrackable* followable) {
 	for(Zombie* z : _zombies) {
 		z->addFollowable(followable);
 	}

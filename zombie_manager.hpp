@@ -11,13 +11,13 @@ class ZombieManager {
 private:
 	vector<Zombie*> _zombies;
 	Bounds* _spawnBounds;
-	vector<IFollowable*> _followables;
+	vector<ITrackable*> _followables;
 	Window* _window;
 	int _waveNumber = 1;
 	bool _anyAlive();
 public:
 	ZombieManager(Bounds* spawnBounds,Window* window);
-	void addFollowable(IFollowable* followable);
+	void addFollowable(ITrackable* followable);
 	void update(float time);
 	void draw(unsigned int shader);
 	void reset();
