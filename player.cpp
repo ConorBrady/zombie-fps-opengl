@@ -6,13 +6,20 @@ Player::Player(glm::vec3 location, Bounds* worldBounds) {
 	_gun = new Gun(_camera);
 }	
 
+Player::Player(Player* p) {
+	_camera = p->_camera;
+	_gun = p->_gun;
+	_isDead = p->_isDead;
+	_initialPos = p->_initialPos;
+}
+
 bool Player::isDead() {
 	return _isDead;
 }
 
 void Player::reset() {
 	_camera->setPos(_initialPos);
-	_gun->destroyBullets();
+	_gun->reset();
 	_isDead = false;
 }
 
@@ -23,6 +30,10 @@ void Player::update(unsigned int shader, float time) {
 
 void Player::draw(unsigned int shader) {
 	_gun->draw(shader);
+}
+
+int Player::getRemainingBullets() {
+	return _gun->getRemainingBullets();
 }
 
 #pragma mark IControllable methods
@@ -40,18 +51,21 @@ glm::vec3 Player::getLocation() {
 
 #pragma mark ICollidable methods
 
-bool Player::isCollidable() {
-	return true;
-}
-
 void Player::collided(ICollidable* collided) {
-	if(collided->getCollisionPoisons() & POISON_HUMAN) {
+	if(collided->getCollisionProperties() & KILL_HUMAN) {
 		_isDead = true;
+	}
+	if(collided->getCollisionProperties() & ADD_BULLET) {
+		_gun->addBullet(1);
 	}
 }
 
-int Player::getCollisionPoisons() {
-	return POISON_NONE;
+int Player::getCollisionProperties() {
+	return DESTROY_STATIONARY_BULLET;
+}
+
+ICollidable* Player::clone() {
+	return new Player(this);
 }
 
 #pragma mark ICollidableCylinder methods
@@ -61,5 +75,5 @@ float Player::getCollidableHeight() {
 }
 
 float Player::getCollidableRadius() {
-	return 1.3;
+	return 1.5;
 }

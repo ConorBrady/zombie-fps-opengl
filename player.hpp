@@ -14,6 +14,8 @@ private:
 	bool _isDead = false;
 	glm::vec3 _initialPos;
 
+	Player(Player* p);
+
 public:
 	Player(glm::vec3 location, Bounds* worldBounds);
 	
@@ -21,6 +23,7 @@ public:
 	void reset();
 	void update(uint shader, float time);
 	void draw(uint shader);
+	int getRemainingBullets();
 
 	#pragma mark IControllable methods
 
@@ -32,9 +35,9 @@ public:
 
 	#pragma mark ICollidable methods
 
-	bool isCollidable();
 	void collided(ICollidable* collided);
-	int getCollisionPoisons();
+	int getCollisionProperties();
+	ICollidable* clone();
 
 	#pragma mark ICollidableCylinder methods
 

@@ -17,6 +17,7 @@ private:
 	float _aspectRatio;
 	int _scoreTextId;
 	int _toastTextId;
+	int _bulletTextId;
 	float _toastDisplayTime = -1;
 	queue<const char*> _toastQueue;
 public:
@@ -33,6 +34,7 @@ public:
 	void setShader(unsigned int shader);
 	void didResize();
 	void updateScore(int score);
+	void updateBulletCount(int bulletCount);
 	void drawText();
 	void presentBuffer();
 	void pollEvents();

@@ -8,6 +8,7 @@
 #define RANDOM_SPEED 1
 #define RANDOM_GUN_VARIATION 0.01
 #define BULLET_COUNT 5
+#define COCKING_TIME 0.5
 
 #define GLM_FORCE_RADIANS
 
@@ -21,19 +22,20 @@ static std::normal_distribution<double> distribution(0,RANDOM_GUN_VARIATION);
 Gun::Gun(Camera* camera) {
 	_camera = camera;
 	_bullets = (Bullet**)calloc(BULLET_COUNT,sizeof(Bullet*));
+	NotificationCenter::getNotificationCenter()->registerForNotifications(this);
 }
 
 void Gun::update(float time) {
 	if(_fireGun) {
 		_fireGun = false;
-		if(time-_gunShotTime > 0.5) {
+		if( time-_gunShotTime > COCKING_TIME && _remainingBullets > 0 ) {
+			_remainingBullets--;
 			_gunShotTime = time;
 			int index = (_lastBulletIndex+1)%BULLET_COUNT;
 			Bullet* bullet = new Bullet(time, getWorldPosition(), _camera->getPitch()+_altY, _camera->getYaw()+_altX, index);
-			CollisionSpace::sharedCollisionSpace()->addCylinder(bullet);
+			CollisionSpace::sharedCollisionSpace()->addLine(bullet);
 			_bullets[index] = bullet;
 			_lastBulletIndex = index;
-
 		}
 	}
 
@@ -44,6 +46,14 @@ void Gun::update(float time) {
 	}
 
 	_lastTick = time;
+}
+
+int Gun::getRemainingBullets() {
+	return _remainingBullets;
+}
+
+void Gun::addBullet(int count) {
+	_remainingBullets += count;
 }
 
 void Gun::draw(uint shader) {
@@ -67,14 +77,14 @@ void Gun::draw(uint shader) {
 	glUniform1f(M1S,1);
 	_mesh->draw(shader);
 
-
-
 }
 
-void Gun::destroyBullets() {
+void Gun::reset() {
 	for(int i = 0; i < BULLET_COUNT; i++) {
 		_bullets[i] = nullptr;
 	}
+	_currentWave = 0;
+	_remainingBullets = 0;
 }
 
 glm::mat4 Gun::_M(float time) {
@@ -109,5 +119,13 @@ void Gun::signal(ControlSignal cs, float value) {
 			break;
 		default:
 			break;
+	}
+}
+
+
+void Gun::respond(string notificationString, int value) {
+	if(notificationString == "CREATED_WAVE") {
+		_remainingBullets += (value-_currentWave)*20;
+		_currentWave = value;
 	}
 }

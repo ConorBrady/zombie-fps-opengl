@@ -1,7 +1,11 @@
 #include "zombie_manager.hpp"
 #include "score_manager.hpp"
+#include "notification_center.hpp"
 
 #include <iostream>
+
+#define WAVE_MULTIPLIER 8
+
 using namespace std;
 
 #include <random>
@@ -25,30 +29,34 @@ void ZombieManager::update(float time) {
 	for(Zombie* zombie : _zombies) {
 		zombie->update(time);
 	}
+	if(_zombies.empty()) {
 
-	while(_zombies.size() < _waveNumber*8) {
-		double randx = distribution(generator);
-		double randy = distribution(generator);
-		if(fabs(randx) < fabs(randy)) {
-			if(randy<0) {
-				randy = _spawnBounds->y1;
+		while(_zombies.size() < _waveNumber*WAVE_MULTIPLIER) {
+			double randx = distribution(generator);
+			double randy = distribution(generator);
+			if(fabs(randx) < fabs(randy)) {
+				if(randy<0) {
+					randy = _spawnBounds->y1;
+				} else {
+					randy = _spawnBounds->y2;
+				}
 			} else {
-				randy = _spawnBounds->y2;
+				if(randx<0) {
+					randx = _spawnBounds->x1;
+				} else {
+					randx = _spawnBounds->x2;
+				}
 			}
-		} else {
-			if(randx<0) {
-				randx = _spawnBounds->x1;
-			} else {
-				randx = _spawnBounds->x2;
+			Zombie* newZombie = new Zombie(glm::vec3(randx,randy,0));
+			CollisionSpace::sharedCollisionSpace()->addCylinder(newZombie);
+			for(ITrackable* f : _followables) {
+				newZombie->addFollowable(f);
 			}
-		}
-		Zombie* newZombie = new Zombie(glm::vec3(randx,randy,0));
-		CollisionSpace::sharedCollisionSpace()->addCylinder(newZombie);
-		for(ITrackable* f : _followables) {
-			newZombie->addFollowable(f);
-		}
-		_zombies.push_back(newZombie);
-	} 
+			_zombies.push_back(newZombie);
+			
+			NotificationCenter::getNotificationCenter()->notify("CREATED_WAVE",_waveNumber);
+		} 
+	}
 	if(!_anyAlive()) {
 		_zombies.clear();
 		_waveNumber++;

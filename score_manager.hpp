@@ -1,4 +1,6 @@
-class ScoreManager {
+#include "notification_center.hpp"
+
+class ScoreManager : public INotifiable {
 private:
 	int _score = 0;
 public:
@@ -6,5 +8,8 @@ public:
 
 	int getScore();
 	void reset();
-	void registerZombieKill();
+
+	#pragma mark INotifiable methods
+
+	void respond(string notificationString, int value);
 };

@@ -4,6 +4,9 @@
 
 #define BULLET_SPEED 50
 
+#include <iostream>
+using namespace std;
+
 #define GLM_FORCE_RADIANS
 
 #include "glm/glm.hpp"
@@ -34,10 +37,23 @@ Bullet::Bullet(float time, glm::vec3 startPos, float pitch, float yaw, int index
 		_mesh = new Mesh("resources/bullet.dae");
 	}
 	_createdAt = time;
+	_lastTick = time;
 	_initialWorldPos = startPos;
+	_lastPos = _initialWorldPos;
 	_yaw = yaw;
 	_pitch = pitch;
 	_index = index;
+}
+
+Bullet::Bullet(Bullet* b) {
+	_createdAt = b->_createdAt;
+	_initialWorldPos = b->_initialWorldPos;
+	_yaw = b->_yaw;
+	_pitch = b->_pitch;
+	_index = b->_index;
+	_isVisible = b->_isVisible;
+	_lastTick = b->_lastTick;
+	_isStationary = b->_isStationary;
 }
 
 glm::vec3 Bullet::getLocation() {
@@ -48,49 +64,70 @@ glm::vec3 Bullet::getLocation() {
 	return glm::vec3(bullet_x,bullet_y,bullet_z);
 }
 
-float Bullet::getCollidableHeight() {
-	return 0.3;
-}
-
-float Bullet::getCollidableRadius() {
-	return 0.3;
-}
-
-bool Bullet::isCollidable() {
-	return !_hasCollided;
+LineSegment* Bullet::getLineSegment() {
+	LineSegment* s = (LineSegment*)malloc(sizeof(LineSegment));
+	s->start = _lastPos;
+	s->end = getLocation();
+	return s;
 }
 
 void Bullet::collided(ICollidable* collided) {
-	if(collided->getCollisionPoisons() & POISON_BULLET)
-	_hasCollided = true;
+	if(_isStationary) {
+		if(collided->getCollisionProperties() & DESTROY_STATIONARY_BULLET) {
+			_isVisible = false;
+		}
+	} else {
+		if(collided->getCollisionProperties() & STOP_MOVING_BULLET) {
+			_isStationary = true;
+		}
+	}
 }
 
-int Bullet::getCollisionPoisons() {
-	return POISON_ZOMBIE;
+int Bullet::getCollisionProperties() {
+
+	if(_isStationary) {
+		if(_isVisible) {
+			return ADD_BULLET;
+		} else {
+			return NONE;
+		}
+	} else {
+		return KILL_ZOMBIE;	
+	}
+}
+
+ICollidable* Bullet::clone() {
+	return new Bullet(this);
 }
 
 void Bullet::update(float time) {
-	if(!_hasCollided) {
+	if(!_isStationary) {
+		_lastPos = getLocation();
 		_lastTick = time;
 	}
 }
 
 void Bullet::draw(int shader) {
+	if(_isVisible) {
+		char buffer [50];
+		sprintf(buffer,"light_position_world[%d]",_index);
+		glUniform3fv(glGetUniformLocation(shader,buffer),1,glm::value_ptr(getLocation()));
+		sprintf(buffer,"light_properties[%d]",_index);
+		glUniformMatrix3fv(glGetUniformLocation(shader,buffer),1,GL_FALSE,glm::value_ptr(lights[_index]));
 
-	char buffer [50];
-	sprintf(buffer,"light_position_world[%d]",_index);
-	glUniform3fv(glGetUniformLocation(shader,buffer),1,glm::value_ptr(getLocation()));
-	sprintf(buffer,"light_properties[%d]",_index);
-	glUniformMatrix3fv(glGetUniformLocation(shader,buffer),1,GL_FALSE,glm::value_ptr(lights[_index]));
-
-	int M_loc = glGetUniformLocation (shader, "M");
-	glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(	glm::translate(glm::mat4(1.0),getLocation())*
-														  	glm::rotate(glm::mat4(1.0),-_yaw,glm::vec3(0,0,1))*
-															glm::rotate(glm::mat4(1.0),(float)(_pitch+M_PI/2),glm::vec3(1,0,0))));
-	int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
-	int MIX = glGetUniformLocation(shader,"MIX");
-	glUniform1f(MIX,0);
-	glUniform1f(M1S,1);
-	_mesh->draw(shader);
+		int M_loc = glGetUniformLocation (shader, "M");
+		glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(	glm::translate(glm::mat4(1.0),getLocation())*
+															  	glm::rotate(glm::mat4(1.0),-_yaw,glm::vec3(0,0,1))*
+																glm::rotate(glm::mat4(1.0),(float)(_pitch+M_PI/2),glm::vec3(1,0,0))));
+		int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
+		int MIX = glGetUniformLocation(shader,"MIX");
+		glUniform1f(MIX,0);
+		glUniform1f(M1S,1);
+		_mesh->draw(shader);
+	} else {
+		char buffer [50];
+		sprintf(buffer,"light_properties[%d]",_index);
+		glUniformMatrix3fv(glGetUniformLocation(shader,buffer),1,GL_FALSE,glm::value_ptr(glm::mat3(0)));
+	}
 	
 }

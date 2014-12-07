@@ -45,6 +45,7 @@ int main () {
 			CollisionSpace::sharedCollisionSpace()->checkForCollisions();
 
 			window->updateScore(ScoreManager::getSharedScoreManager()->getScore());
+			window->updateBulletCount(player->getRemainingBullets());
 			window->drawText();
 			window->pollEvents();
 			window->presentBuffer();

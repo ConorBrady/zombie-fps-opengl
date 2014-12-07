@@ -159,6 +159,7 @@ Window::Window(double width, double height) {
 	init_text_rendering ("resources/freemono.png", "resources/freemono.meta", width, height);
 	_scoreTextId = add_text("",0.4f, -0.8f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 	_toastTextId = add_text("",0.4f, -0.7f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+	_bulletTextId = add_text("20 Bullets",-0.9f, -0.8f, 100.f, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void Window::addControllable(IControllable* controllable) {
@@ -199,6 +200,12 @@ void Window::updateScore(int score) {
 	char tmp[7];
 	sprintf (tmp, "Score: %06d\n", score);
 	update_text (_scoreTextId, tmp);
+}
+
+void Window::updateBulletCount(int bulletCount) {
+	char tmp[7];
+	sprintf (tmp, "%02d Bullets", bulletCount);
+	update_text (_bulletTextId, tmp);
 }
 
 void Window::queueToast(const char* toast) {

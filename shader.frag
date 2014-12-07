@@ -89,12 +89,11 @@ void main () {
 			float lightDist = length(light_position_eye);
 			if(lightDist<50) {
 				float dist = distToLine(position_eye,vec3(0),light_position_eye);
-				if(dist < 10) {
-					
-					float thisStrength = (1/(1+pow(dist/5,2)))*abs(sin(dist-time*5))*(1/(1+pow(lightDist/20,2)));
-					strength = max(strength,thisStrength);
-					glow += Ld*thisStrength;
-				}
+
+				float thisStrength = (1/(1+pow(dist/5,2)))*abs(sin(dist-time*5))*(1/(1+pow(lightDist/20,2)));
+				strength = max(strength,thisStrength);
+				glow += Ld*thisStrength;
+	
 			}
 		}
 	}

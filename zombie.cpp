@@ -1,7 +1,7 @@
 #include "zombie.hpp"
 
 #include "mesh.hpp"
-#include "score_manager.hpp"
+#include "notification_center.hpp"
 
 #include <iostream>
 
@@ -64,6 +64,31 @@ Zombie::Zombie(glm::vec3 location) {
 	}
 }
 
+Zombie::Zombie(Zombie* z) {
+
+	_location = z->_location;
+	for(ITrackable* f : z->_followables) {
+		_followables.push_back(f);
+	}
+	_lastTick = z->_lastTick;
+	_yaw = z->_yaw;
+
+	_series = (int*)malloc(sizeof(int)*SERIES_SIZE);
+	for(int i = 0; i < SERIES_SIZE; i++) {
+		_series[i] = z->_series[i];
+	}
+	_seriesIndex = z->_seriesIndex;
+	_previousSine = z->_previousSine;
+	_mode = z->_mode;
+	_mix = z->_mix;
+	_speedFactor = z->_speedFactor;
+	_deadTime = z->_deadTime;
+}
+
+Zombie::~Zombie() {
+	free(_series);
+}
+
 glm::vec3 Zombie::getLocation() {
 	return _location;
 }
@@ -73,11 +98,7 @@ float Zombie::getCollidableHeight() {
 }
 
 float Zombie::getCollidableRadius() {
-	return 1.3;
-}
-
-bool Zombie::isCollidable() {
-	return isAlive();
+	return 1.2;
 }
 
 bool Zombie::isAlive() {
@@ -85,14 +106,24 @@ bool Zombie::isAlive() {
 }
 
 void Zombie::collided(ICollidable* collided) {
-	if(collided->getCollisionPoisons() & POISON_ZOMBIE) {
-		_deadTime = _lastTick;
-		ScoreManager::getSharedScoreManager()->registerZombieKill();
+	if(collided->getCollisionProperties() & KILL_ZOMBIE) {
+		if(isAlive()) {
+			_deadTime = _lastTick;
+			NotificationCenter::getNotificationCenter()->notify("ZOMBIE_KILL",1);
+		}
 	}
 }
 
-int Zombie::getCollisionPoisons() {
-	return POISON_HUMAN | POISON_BULLET;
+int Zombie::getCollisionProperties() {
+	if(isAlive()) {
+		return KILL_HUMAN | STOP_MOVING_BULLET;
+	} else {
+		return NONE;
+	}
+}
+
+ICollidable* Zombie::clone() {
+	return new Zombie(this);
 }
 
 void Zombie::update(float time) {
@@ -155,22 +186,26 @@ void Zombie::update(float time) {
 
 void Zombie::draw(unsigned int shader) {
 
-	if(_deadTime < 0) {
-		int M_loc = glGetUniformLocation (shader, "M");
-	 	glm::mat4 M = glm::translate(glm::mat4(1.0),_location);
-		M = glm::rotate(M, -_yaw, glm::vec3(0,0,1));
-		glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(M));
+	
+	int M_loc = glGetUniformLocation (shader, "M");
+ 	glm::mat4 M = glm::translate(glm::mat4(1.0),_location);
+	M = glm::rotate(M, -_yaw, glm::vec3(0,0,1));
+	glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(M));
 
-		int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
-		int M2S = glGetUniformLocation(shader,"MESH_2_SELECT");
-		int MIX = glGetUniformLocation(shader,"MIX");
+	int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
+	int M2S = glGetUniformLocation(shader,"MESH_2_SELECT");
+	int MIX = glGetUniformLocation(shader,"MIX");
+	int explode = glGetUniformLocation(shader,"EXPLODE");
 
-		glUniform1f(MIX,_mix);
-		glUniform1f(M1S,_series[_seriesIndex]);
-		glUniform1f(M2S,_series[(_seriesIndex+1)%SERIES_SIZE]);
-
-		_mesh->draw(shader);
+	glUniform1f(MIX,_mix);
+	glUniform1f(M1S,_series[_seriesIndex]);
+	glUniform1f(M2S,_series[(_seriesIndex+1)%SERIES_SIZE]);
+	if(_deadTime>0) {
+		glUniform1f(explode,_lastTick-_deadTime);
 	}
+
+	_mesh->draw(shader);
+	glUniform1f(explode,0);
 
 }
 

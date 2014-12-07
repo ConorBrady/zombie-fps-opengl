@@ -22,18 +22,33 @@ private:
 
 	ITrackable* _nearestFollowable();
 
+	Zombie(Zombie* zombie);
+
 public:
 	Zombie(glm::vec3 location);
+	~Zombie();
+	
 	void update(float time);
 	void draw(unsigned int shader);
 
+	bool isAlive();
+
+	#pragma mark ITrackable methods
+	
 	glm::vec3 getLocation();
+	
+	#pragma mark ICollidable methods
+
+	void collided(ICollidable* collided);
+	int getCollisionProperties();
+	ICollidable* clone();
+
+	#pragma mark ICollidableCylinder methods
+
 	float getCollidableHeight();
 	float getCollidableRadius();
-	bool isCollidable();
-	bool isAlive();
-	void collided(ICollidable* collided);
-	int getCollisionPoisons();
+
+	#pragma mark IFollower methods
 
 	void addFollowable(ITrackable* followable);
 };

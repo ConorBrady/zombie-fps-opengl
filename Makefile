@@ -10,6 +10,7 @@ SOURCES = \
 	landscape.cpp \
 	main.cpp \
 	mesh.cpp \
+	notification_center.cpp \
 	player.cpp \
 	score_manager.cpp \
 	shader_loader.cpp \
