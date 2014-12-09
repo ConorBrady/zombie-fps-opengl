@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#
+# Check if Homebrew is installed
+#
+which -s brew
+if [[ $? != 0 ]] ; then
+	# Install Homebrew
+	# https://github.com/mxcl/homebrew/wiki/installation
+	echo "Installing homebrew"
+	/usr/bin/ruby -e "$(curl -fsSL https://raw.github.com/gist/323731)"
+else
+	echo "Updating homebrew"
+	brew update
+fi
+
+#
+# Check if Git is installed
+#
+brew ls --versions glew || brew install glew
+brew ls --versions glfw3 || brew install glfw3
+brew ls --versions assimp || brew install assimp
+brew ls --versions devil || brew install devil
+cp lib/irrKlang/libirrklang.dylib /usr/local/lib/

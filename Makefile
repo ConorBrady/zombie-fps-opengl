@@ -1,4 +1,4 @@
-EXECUTABLE = graphics_lab
+EXECUTABLE = zombie_fps
 CC = g++
 CFLAGS = \
 		-std=c++11 \
