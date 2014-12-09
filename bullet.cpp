@@ -92,7 +92,7 @@ int Bullet::getCollisionProperties() {
 			return NONE;
 		}
 	} else {
-		return KILL_ZOMBIE;	
+		return KILL_ZOMBIE;
 	}
 }
 
@@ -129,5 +129,38 @@ void Bullet::draw(int shader) {
 		sprintf(buffer,"light_properties[%d]",_index);
 		glUniformMatrix3fv(glGetUniformLocation(shader,buffer),1,GL_FALSE,glm::value_ptr(glm::mat3(0)));
 	}
-	
+
+}
+
+
+const char* Bullet::ambientSound() {
+	return "resources/sound/laser_ambient.wav";
+}
+
+bool Bullet::shouldPlayAmbientSound() {
+	return _isVisible;
+}
+
+bool Bullet::shouldContinueAmbientSound() {
+	return _isVisible;
+}
+
+const char* Bullet::spawnSound() {
+	return "resources/sound/laser_spawn.wav";
+}
+
+bool Bullet::shouldContinueSpawnSound() {
+	return _isVisible;
+}
+
+const char* Bullet::destroySound() {
+	return "resources/sound/laser_destroy.wav";
+}
+
+bool Bullet::shouldPlayDestroySound() {
+	return !_isVisible;
+}
+
+bool Bullet::shouldContinueDestroySound() {
+	return true;
 }

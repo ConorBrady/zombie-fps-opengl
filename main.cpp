@@ -1,5 +1,6 @@
 #define FPS 25.0
 
+#include "audible_space.hpp"
 #include "player.hpp"
 #include "score_manager.hpp"
 #include "shader_loader.hpp"
@@ -13,7 +14,8 @@ int main () {
 	Shader* shader = new Shader("shader.vert","shader.frag");
 
 	Landscape* landscape = Landscape::getLandscape();
-	Player* player = new Player(vec3(0,0,0),landscape->getBounds());
+	Player* player = new Player(glm::vec3(0,0,0),landscape->getBounds());
+	AudibleSpace::sharedAudibleSpace()->setSoundTrack("resources/sound/cod_soundtrack.wav");
 
 	ZombieManager* zombieManager = new ZombieManager(landscape->getBounds(),window);
 
@@ -28,7 +30,7 @@ int main () {
 		ScoreManager::getSharedScoreManager()->reset();
 		CollisionSpace::sharedCollisionSpace()->clear();
 		CollisionSpace::sharedCollisionSpace()->addCylinder(player);
-		
+
 		double last_tick = window->getTime();
 
 		while (!window->shouldClose() && !player->isDead()) {
@@ -43,7 +45,7 @@ int main () {
 			player->draw(*shader);
 
 			CollisionSpace::sharedCollisionSpace()->checkForCollisions();
-
+			AudibleSpace::sharedAudibleSpace()->update(last_tick);
 			window->updateScore(ScoreManager::getSharedScoreManager()->getScore());
 			window->updateBulletCount(player->getRemainingBullets());
 			window->drawText();
@@ -53,7 +55,7 @@ int main () {
 			while(window->getTime()<last_tick+1/FPS);
 			last_tick = window->getTime();
 		}
-		
+
 	}
 	return 0;
 }

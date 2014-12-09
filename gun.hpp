@@ -11,7 +11,7 @@ private:
 	Mesh* _mesh = new Mesh("resources/shotgun.dae");
 	float _altY = 0;
 	float _altX = 0;
-	
+
 	bool _fireGun = false;
 	float _gunShotTime = -10;
 	Bullet** _bullets = nullptr;
@@ -27,7 +27,7 @@ private:
 public:
 	Gun(Camera* camera);
 	void update(float time);
-	void draw(uint shader);
+	void draw(unsigned int shader);
 	glm::vec3 getWorldPosition();
 	void reset();
 	void addBullet(int count);

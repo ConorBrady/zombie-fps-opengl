@@ -26,7 +26,7 @@ void main () {
 	// send normals to fragment shader
 	vec3 normal_world = vec3(M*vec4(vertex_normal,0.0));
 	normal_eye = vec3(V*vec4(normal_world,0.0));
-	
+
 	vec3 mesh1;
 	if(MESH_1_SELECT==1) {
 		mesh1 = vertex_point_1;
@@ -49,7 +49,7 @@ void main () {
 	position_world = vec3(
 			position_world.x+EXPLODE*normal_world.x*10,
 			position_world.y+EXPLODE*normal_world.y*10,
-			position_world.z+(EXPLODE*normal_world.z*10-5*EXPLODE*EXPLODE) );
+			position_world.z+(EXPLODE*normal_world.z*10+2*EXPLODE*EXPLODE) );
 
 	position_eye = vec3(V*vec4(position_world,1.0));
 	tex_coords = vertex_tex_coords;

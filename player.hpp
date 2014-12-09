@@ -5,6 +5,7 @@
 #include "controller_interface.hpp"
 #include "follow_interface.hpp"
 #include "collision_space.hpp"
+#include "audible_space.hpp"
 
 class Player : public IControllable, public ICollidableCylinder {
 
@@ -18,11 +19,11 @@ private:
 
 public:
 	Player(glm::vec3 location, Bounds* worldBounds);
-	
+
 	bool isDead();
 	void reset();
-	void update(uint shader, float time);
-	void draw(uint shader);
+	void update(unsigned int shader, float time);
+	void draw(unsigned int shader);
 	int getRemainingBullets();
 
 	#pragma mark IControllable methods
@@ -43,5 +44,6 @@ public:
 
 	float getCollidableHeight();
 	float getCollidableRadius();
+
 
 };

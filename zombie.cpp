@@ -131,7 +131,7 @@ void Zombie::update(float time) {
 		ITrackable* nearestFollowable = _nearestFollowable();
 		if(nearestFollowable != nullptr) {
 			float targetYaw = atan((nearestFollowable->getLocation().x-_location.x)/(nearestFollowable->getLocation().y-_location.y));
-			if(nearestFollowable->getLocation().y>_location.y) {
+			if(nearestFollowable->getLocation().y >_location.y) {
 				targetYaw = M_PI+targetYaw;
 			}
 			float dYaw = targetYaw - _yaw;
@@ -186,10 +186,17 @@ void Zombie::update(float time) {
 
 void Zombie::draw(unsigned int shader) {
 
-	
+
 	int M_loc = glGetUniformLocation (shader, "M");
  	glm::mat4 M = glm::translate(glm::mat4(1.0),_location);
+	if(!isAlive()) {
+		M = glm::translate(M,glm::vec3(-sin(sin(_yaw)*(_lastTick-_deadTime))*10, -sin(cos(_yaw)*(_lastTick-_deadTime))*10,0));
+	}
 	M = glm::rotate(M, -_yaw, glm::vec3(0,0,1));
+	if(!isAlive()) {
+		M = glm::rotate(M,_lastTick-_deadTime,glm::vec3(0,0,1));
+
+	}
 	glUniformMatrix4fv (M_loc, 1, GL_FALSE, glm::value_ptr(M));
 
 	int M1S = glGetUniformLocation(shader,"MESH_1_SELECT");
@@ -201,7 +208,7 @@ void Zombie::draw(unsigned int shader) {
 	glUniform1f(M1S,_series[_seriesIndex]);
 	glUniform1f(M2S,_series[(_seriesIndex+1)%SERIES_SIZE]);
 	if(_deadTime>0) {
-		glUniform1f(explode,_lastTick-_deadTime);
+		glUniform1f(explode,(_lastTick-_deadTime)/3);
 	}
 
 	_mesh->draw(shader);
@@ -211,4 +218,36 @@ void Zombie::draw(unsigned int shader) {
 
 void Zombie::addFollowable(ITrackable* followable) {
 	_followables.push_back(followable);
+}
+
+const char* Zombie::ambientSound() {
+	return "resources/sound/zombie_ambient.wav";
+}
+
+bool Zombie::shouldPlayAmbientSound() {
+	return isAlive() && rand()%50==0;
+}
+
+bool Zombie::shouldContinueAmbientSound() {
+	return isAlive();
+}
+
+const char* Zombie::spawnSound() {
+	return "resources/sound/zombie_spawn.wav";
+}
+
+bool Zombie::shouldContinueSpawnSound() {
+	return isAlive();
+}
+
+const char* Zombie::destroySound() {
+	return "resources/sound/zombie_destroy.wav";
+}
+
+bool Zombie::shouldPlayDestroySound() {
+	return !isAlive();
+}
+
+bool Zombie::shouldContinueDestroySound() {
+	return true;
 }

@@ -1,10 +1,12 @@
 #include "player.hpp"
+#include "audible_space.hpp"
 
 Player::Player(glm::vec3 location, Bounds* worldBounds) {
 	_initialPos = location;
 	_camera = new Camera(location,M_PI/2,0,worldBounds);
+	AudibleSpace::sharedAudibleSpace()->setCamera(_camera);
 	_gun = new Gun(_camera);
-}	
+}
 
 Player::Player(Player* p) {
 	_camera = p->_camera;

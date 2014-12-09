@@ -1,6 +1,7 @@
 #include "zombie_manager.hpp"
 #include "score_manager.hpp"
 #include "notification_center.hpp"
+#include "audible_space.hpp"
 
 #include <iostream>
 
@@ -49,13 +50,14 @@ void ZombieManager::update(float time) {
 			}
 			Zombie* newZombie = new Zombie(glm::vec3(randx,randy,0));
 			CollisionSpace::sharedCollisionSpace()->addCylinder(newZombie);
+			AudibleSpace::sharedAudibleSpace()->addAudible(newZombie);
 			for(ITrackable* f : _followables) {
 				newZombie->addFollowable(f);
 			}
 			_zombies.push_back(newZombie);
-			
+
 			NotificationCenter::getNotificationCenter()->notify("CREATED_WAVE",_waveNumber);
-		} 
+		}
 	}
 	if(!_anyAlive()) {
 		_zombies.clear();

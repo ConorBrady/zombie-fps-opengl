@@ -5,7 +5,7 @@
 #define DEAD_ZONE 0.2
 #define ANGULAR_SPEED 10
 #define LINEAR_SPEED 15
-#define BOUNCE_HEIGHT 0.25
+#define BOUNCE_HEIGHT 0.50
 #define BOUNCE_SPEED 7
 
 #include "landscape.hpp"
@@ -70,7 +70,7 @@ void Camera::signal(ControlSignal cs, float value) {
 	}
 }
 
-void Camera::update(uint shader, float time) {
+void Camera::update(unsigned int shader, float time) {
 
 	_bounce = 0;
 	if( _lastUpdateTime > 0 ) {

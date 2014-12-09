@@ -5,12 +5,13 @@
 
 #include "landscape.hpp"
 
-using namespace glm;
+#ifndef CAMERA
+#define CAMERA
 
 class Camera : public virtual IControllable{
 
 private:
-	vec3 _xyz;
+	glm::vec3 _xyz;
 	float _pitch;
 	float _yaw;
 
@@ -28,16 +29,17 @@ private:
 	Bounds* _worldBounds;
 
 public:
-	Camera(vec3 xyz, float pitch, float yaw, Bounds* worldBounds);
+	Camera(glm::vec3 xyz, float pitch, float yaw, Bounds* worldBounds);
 
-	void setPos(vec3 xyz);
+	void setPos(glm::vec3 xyz);
 	void signal(ControlSignal cs, float value);
 
-	void update(uint shader, float time);
+	void update(unsigned int shader, float time);
 
 	float getPitch();
 	float getYaw();
-	
+
 	glm::mat4 getViewMatrix();
 	glm::vec3 getLocation();
 };
+#endif

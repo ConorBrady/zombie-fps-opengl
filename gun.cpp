@@ -16,6 +16,8 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+#include "audible_space.hpp"
+
 static std::default_random_engine generator;
 static std::normal_distribution<double> distribution(0,RANDOM_GUN_VARIATION);
 
@@ -34,6 +36,7 @@ void Gun::update(float time) {
 			int index = (_lastBulletIndex+1)%BULLET_COUNT;
 			Bullet* bullet = new Bullet(time, getWorldPosition(), _camera->getPitch()+_altY, _camera->getYaw()+_altX, index);
 			CollisionSpace::sharedCollisionSpace()->addLine(bullet);
+			AudibleSpace::sharedAudibleSpace()->addAudible(bullet);
 			_bullets[index] = bullet;
 			_lastBulletIndex = index;
 		}
