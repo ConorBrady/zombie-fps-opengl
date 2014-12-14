@@ -12,7 +12,7 @@ LDFLAGS= \
  		`pkg-config glew --libs` \
 		`pkg-config IL --libs` \
 		`pkg-config assimp --libs` \
-		-Llib/irrKlang-64bit-1.5.0/bin/macosx-gcc -lirrklang
+		-L/usr/local/lib -lirrklang
 
 SOURCES = \
 	audible_space.cpp \
