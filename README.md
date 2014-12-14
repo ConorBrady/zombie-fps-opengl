@@ -39,7 +39,13 @@ on the gun and zombies.
 
 ### Running Bounce and Gun Recoil
 The bounce as the player runs is a absolute sine wave as a function of time
-from the beginning of the run
+from the beginning of the run, stopping when the player comes to a standstill.
+
+![](resources/recoil_func.jpg)
+
+Above is the function of the recoil as a function of time from the initial
+shot, the gun moves back
+and pitches up on the gun shot according to that function.
 
 ### Libraries:
 * [OpenGL Extension Wrangler Library]

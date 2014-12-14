@@ -6,7 +6,7 @@ CFLAGS = \
 		`pkg-config glew --cflags` \
 		`pkg-config IL --cflags` \
 		`pkg-config assimp --cflags` \
-		-I ./include -g -Wall
+		-I ./include -I/usr/local/include/ -g -Wall
 LDFLAGS= \
  		`pkg-config glfw3 --static --libs` \
  		`pkg-config glew --libs` \
