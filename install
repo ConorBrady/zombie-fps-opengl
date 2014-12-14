@@ -17,6 +17,7 @@ fi
 #
 # Check if Git is installed
 #
+brew install gcc
 brew install pkg-config
 brew install glew
 brew install glfw3
