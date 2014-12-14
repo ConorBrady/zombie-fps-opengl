@@ -9,11 +9,13 @@
 #include "glm/gtc/type_ptr.hpp"
 
 class ITrackable {
+	// an object capable of being tracked in the 3D space
 public:
 	virtual glm::vec3 getLocation() = 0;
 };
 
-class IFollower{
+class IFollower {
+	// an object interested in following 1 or more objects
 public:
 	virtual void addFollowable(ITrackable* followable) = 0;
 };
