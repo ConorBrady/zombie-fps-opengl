@@ -12,7 +12,6 @@ layout (location=6) in vec3 vertex_point_3;
 uniform mat4 M; // model matrix
 uniform mat4 P;
 uniform mat4 V;
-uniform mat4 BONES[128];
 uniform float MESH_1_SELECT;
 uniform float MESH_2_SELECT;
 uniform float MIX;

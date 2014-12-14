@@ -6,6 +6,7 @@
 class Bullet;
 
 class Gun : public IControllable, public INotifiable {
+	// The players gun object
 private:
 	Camera* _camera;
 	Mesh* _mesh = new Mesh("resources/shotgun.dae");

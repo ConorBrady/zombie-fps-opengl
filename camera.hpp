@@ -9,7 +9,8 @@
 #define CAMERA
 
 class Camera : public virtual IControllable{
-
+ 	// object representing the player camera view, this is responsible for
+	// updating the view matrix in the shaders
 private:
 	glm::vec3 _xyz;
 	float _pitch;

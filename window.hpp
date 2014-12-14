@@ -9,7 +9,10 @@
 using namespace std;
 
 class Window : public virtual IController{
-
+	// manages all element of context and keyboard input, could be seen as the
+	// top level, wrapping all GLFW function calls and handling all callbacks
+	// also handles all screen text etc.
+	
 private:
 	vector<IControllable*> _controllables;
 	GLFWwindow* _window;

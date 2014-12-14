@@ -8,7 +8,8 @@
 #include "audible_space.hpp"
 
 class Player : public IControllable, public ICollidableCylinder {
-
+	// full encapsulation of everything that concerns the player, including the
+	// gun and the camera
 private:
 	Camera* _camera = nullptr;
 	Gun* _gun = nullptr;

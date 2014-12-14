@@ -14,13 +14,10 @@ else
 	brew update
 fi
 
-#
-# Check if Git is installed
-#
 brew install gcc
 brew install pkg-config
 brew install glew
-brew install glfw3
+brew install homebrew/versions/glfw3
 brew install assimp
 brew install devil
 cp lib/irrKlang/libirrklang.dylib /usr/local/lib/

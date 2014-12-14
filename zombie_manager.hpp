@@ -8,6 +8,7 @@
 using namespace std;
 
 class ZombieManager {
+	// spawns and manages the waves of zombies
 private:
 	vector<Zombie*> _zombies;
 	Bounds* _spawnBounds;

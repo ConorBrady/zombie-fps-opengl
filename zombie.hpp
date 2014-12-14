@@ -5,7 +5,7 @@
 #include <vector>
 
 class Zombie : public IFollower, public ICollidableCylinder, public IAudible {
-
+	// the zombie
 private:
 	glm::vec3 _location;
 	std::vector<ITrackable*> _followables;

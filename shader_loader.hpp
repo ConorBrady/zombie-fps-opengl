@@ -1,4 +1,5 @@
 class Shader {
+	// class for loading shaders
 private:
 	unsigned int _shaderId;
 

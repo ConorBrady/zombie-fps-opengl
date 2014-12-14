@@ -63,7 +63,9 @@ public:
 };
 
 class CollisionSpace {
-
+	// singleton collision space object, manages the collidable objects in the
+	// game and alerts them when they have collided and to what they collided
+	// into
 private:
 	std::vector<ICollidableCylinder*> _collidableCylinders;
 	std::vector<ICollidableLine*> _collidableLines;

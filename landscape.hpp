@@ -9,6 +9,7 @@ typedef struct {
 	float y2;
 } Bounds;
 class Landscape {
+	// the game level, not much going on here as it is a box
 private:
 	Mesh* _mesh = nullptr;
 
